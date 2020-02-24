@@ -1,0 +1,12 @@
+node_modules
+
+yarn.lock+
+.env
+*.sqlite
+.idea/
+.vscode/
+build/
+dist/
+tmp/
+temp/
+db/

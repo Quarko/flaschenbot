@@ -1,0 +1,49 @@
+{
+  "name": "flaschenbot",
+  "version": "1.0.0",
+  "description": "Bot for flaschenpost.de",
+  "main": "src/index.ts",
+  "repository": "git@github.com:Quarko/flaschenbot.git",
+  "author": "Quarko",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "watch": "nodemon src/index.ts",
+    "clean": "rimraf dist",
+    "build": "yarn run clean && yarn lint && tsc",
+    "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",
+    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
+    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:run -n $1"
+  },
+  "dependencies": {
+    "@types/node": "^13.1.8",
+    "add": "^2.0.6",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^10.0.0",
+    "cron": "^1.8.2",
+    "dotenv": "^8.2.0",
+    "puppeteer": "^2.0.0",
+    "sequelize": "^5.21.3",
+    "sequelize-cli": "^5.5.1",
+    "source-map-loader": "^0.2.4",
+    "sqlite3": "^4.1.1",
+    "telegraf": "^3.36.0",
+    "typeorm": "^0.2.22",
+    "yarn": "^1.21.1"
+  },
+  "devDependencies": {
+    "@types/cron": "^1.7.1",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "nodemon": "^2.0.2",
+    "prettier": "^1.19.1",
+    "puppeteer-tsd": "^0.0.2",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.5"
+  }
+}
