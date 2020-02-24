@@ -8,7 +8,7 @@ export const statusHandler = async ctx => {
     const postCodes: PostCode[] = await getRepository(PostCode).find({ user: user });
 
     try {
-        const reply: string = await updateOffersForPostCodes(postCodes, true);
+        const reply = await updateOffersForPostCodes(postCodes, true);
 
         if (reply !== '') {
             ctx.reply(reply, ctx.session.menu);
@@ -20,6 +20,6 @@ export const statusHandler = async ctx => {
         }
     } catch (error) {
         console.log(error);
-        ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.');
+        ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu);
     }
 };

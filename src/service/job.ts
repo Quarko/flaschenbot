@@ -25,51 +25,47 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
 
     let reply = '';
 
-    try {
-        for (const postCode of postCodes) {
-            const latestOffers = await Scraper.runWithPC(postCode.postCode);
-            const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
+    for (const postCode of postCodes) {
+        const latestOffers = await Scraper.runWithPC(postCode.postCode);
+        const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
 
-            for (const latestOffer of latestOffers) {
-                const exist = offers.some(
-                    e =>
-                        e.name == latestOffer.name &&
-                        e.bottleAmount == latestOffer.bottleAmount &&
-                        e.bottleSize == latestOffer.bottleSize &&
-                        e.price == latestOffer.price &&
-                        e.category == latestOffer.category,
-                );
+        for (const latestOffer of latestOffers) {
+            const exist = offers.some(
+                e =>
+                    e.name == latestOffer.name &&
+                    e.bottleAmount == latestOffer.bottleAmount &&
+                    e.bottleSize == latestOffer.bottleSize &&
+                    e.price == latestOffer.price &&
+                    e.category == latestOffer.category,
+            );
 
-                if (!exist) {
-                    await getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true });
-                }
-            }
-
-            for (const offer of offers) {
-                const exist = latestOffers.some(
-                    e =>
-                        e.name === offer.name &&
-                        e.bottleAmount === offer.bottleAmount &&
-                        e.bottleSize === offer.bottleSize &&
-                        e.price == offer.price &&
-                        e.category == offer.category,
-                );
-
-                if (!exist) {
-                    offer.isLatest = false;
-                    await getRepository(Offer).save(offer);
-                }
-            }
-
-            if (requireMessage) {
-                reply += generateMessage(latestOffers, postCode.postCode);
+            if (!exist) {
+                await getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true });
             }
         }
 
-        return reply;
-    } catch (error) {
-        return error;
+        for (const offer of offers) {
+            const exist = latestOffers.some(
+                e =>
+                    e.name === offer.name &&
+                    e.bottleAmount === offer.bottleAmount &&
+                    e.bottleSize === offer.bottleSize &&
+                    e.price == offer.price &&
+                    e.category == offer.category,
+            );
+
+            if (!exist) {
+                offer.isLatest = false;
+                await getRepository(Offer).save(offer);
+            }
+        }
+
+        if (requireMessage) {
+            reply += generateMessage(latestOffers, postCode.postCode);
+        }
     }
+
+    return reply;
 };
 export const webScrapingJob = async () => {
     const postCodes: PostCode[] = await getRepository(PostCode).find();
