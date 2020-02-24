@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { config } from 'dotenv';
-import { connect } from './db';
+import { connect } from './database';
 import { CronJob } from 'cron';
 import { authHandler } from './middleware';
 import { stopHandler, welcomeHandler } from './service/subscription';
