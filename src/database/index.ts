@@ -9,7 +9,7 @@ export async function connect(databaseFN: string) {
     return (_connection = await createConnection({
         type: 'sqlite',
         database: databaseFN,
-        entities: ['entity/*.ts', 'entity/*.js'],
+        entities: [ User, Offer, PostCode ],
         logging: true,
     }));
 }
