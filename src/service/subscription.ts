@@ -1,6 +1,9 @@
 import { User } from '../entity/User';
 import { getRepository } from 'typeorm';
 
+// eslint-disable-next-line
+const Telegraf = require('telegraf')
+
 export async function welcomeHandler(ctx) {
     const user = new User();
     const telegramUser = ctx.update.message.from;
@@ -28,5 +31,8 @@ export const stopHandler = async ctx => {
 
     ctx.reply(
         'Schade das du gehen möchtest. Du wurdest aus dem Verteiler entfernt. Schreibe /start wenn du wieder Angebote bekommen möchtest.',
-    );
+        Telegraf.Markup.keyboard(['/start'])
+        .resize()
+        .extra(),
+        );
 };
