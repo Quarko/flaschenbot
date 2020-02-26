@@ -8,6 +8,7 @@ import { postCodeHandler, postCodeChangeHandler } from './service/postCode';
 import { userInformJob, webScrapingJob } from './service/job';
 import { statusHandler } from './service/status';
 import { helpHandler } from './service/help';
+import {FlaschenpostScraper} from "./utils/scraper";
 
 // eslint-disable-next-line
 const Telegraf = require('telegraf');
@@ -38,6 +39,17 @@ connect(process.env.DATABASE_URL)
         bot.use(authHandler());
 
         bot.start(async ctx => await welcomeHandler(ctx));
+
+        bot.command('test', async ctx => {
+           const Scraper = new FlaschenpostScraper(process.env.URL);
+
+           const exists = await Scraper.pcIsAvailable("12345");
+
+           if(exists)
+                ctx.reply("existiert");
+           else
+                ctx.reply("nicht");
+        });
 
         bot.command('plz', async ctx => await postCodeHandler(ctx));
 

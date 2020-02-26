@@ -21,8 +21,8 @@ export async function welcomeHandler(ctx) {
     user.language = telegramUser.language_code;
     ctx.session.user = await getRepository(User).save(user);
 
-    ctx.reply('Willkommen beim flaschenbot, ich informiere dich regelmäßig über Angebote auf flaschenpost :)\n' +
-        'Schreib mir einfach eine Postleitzahl und ich informiere dich immer um 10:00 Uhr über neue Angebote. Mit dem Kommando /status kannst du jederzeit die Angebote abfragen.', ctx.session.menu);
+    ctx.reply('Willkommen beim flaschenbot, ich informiere dich regelmäßig über Angebote auf flaschenpost :)\n\n' +
+        'Schreib mir einfach eine Postleitzahl und ich informiere dich immer um 10:00 Uhr über neue Angebote. Mit dem Kommando /status kannst du jederzeit die Angebote abfragen. Über /plz siehst du welche Postleitzahlen du abonniert hast.', ctx.session.menu);
 }
 
 export const stopHandler = async ctx => {

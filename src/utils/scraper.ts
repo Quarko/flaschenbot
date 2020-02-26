@@ -4,6 +4,8 @@ export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
     private offerKey = 'TOP-ANGEBOT';
+    private timeout = 10000;
+
     private categories: string[] = [
         'pils',
         'helles',
@@ -23,6 +25,23 @@ export class FlaschenpostScraper {
         this.baseUrl = baseUrl;
     }
 
+    async pcIsAvailable(pc: string): Promise<boolean> {
+        const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true });
+        const page = await browser.newPage();
+
+        try {
+            await page.goto(this.baseUrl);
+            await page.waitFor('input#validZipcode');
+            await page.type('input#validZipcode', pc);
+            await page.click('button.zip--button');
+            await page.waitForSelector('.fp-modal_inner', {timeout: this.timeout, hidden: true});
+
+            return true;
+        } catch (error) {
+            return false
+        }
+    }
+
     async runWithPC(pc: string): Promise<FlaschenpostOffer[]> {
         const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true });
         const page = await browser.newPage();
@@ -32,11 +51,11 @@ export class FlaschenpostScraper {
             await page.waitFor('input#validZipcode');
             await page.type('input#validZipcode', pc);
             await page.click('button.zip--button');
-            await page.waitForSelector('.fp-modal_inner', { timeout: 15000, hidden: true });
+            await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
 
             const category = 'pils';
             await page.goto(`${this.baseUrl}/bier/${category}`);
-            await page.waitForSelector('#fp-productList', { timeout: 15000 });
+            await page.waitForSelector('#fp-productList', { timeout: this.timeout });
 
             const offers: FlaschenpostOffer[] = await page.evaluate(() => {
                 const elements: any = document.getElementsByClassName('fp-productList_highlight');

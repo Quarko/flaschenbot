@@ -19,8 +19,7 @@ export class PostCode {
     @Column({ nullable: false })
     postCode: string;
 
-    @ManyToOne(() => User, { eager: true })
-    @JoinColumn()
+    @ManyToOne(() => User, {nullable: false})
     user: User;
 
     @OneToMany(
@@ -29,6 +28,9 @@ export class PostCode {
     )
     @JoinColumn()
     offers: Offer[];
+
+    @Column({ default: true, nullable: false})
+    isActive: boolean;
 
     @CreateDateColumn()
     createdAt: string;

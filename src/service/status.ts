@@ -14,7 +14,7 @@ export const statusHandler = async ctx => {
             ctx.reply(reply, ctx.session.menu);
         } else {
             ctx.reply(
-                'Für deinen Benutzer sind keine Postleitzahlen hinterlegt, um den Status abfragen zu können.',
+                'Für deinen Benutzer sind keine Postleitzahlen hinterlegt, um den Status abfragen zu können. Schreibe eine Postleitzahl in den Chat, für die du den Status abfragen möchtest.',
                 ctx.session.menu,
             );
         }
