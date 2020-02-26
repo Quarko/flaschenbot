@@ -10,7 +10,7 @@
     "start": "ts-node src/index.ts",
     "watch": "nodemon src/index.ts",
     "clean": "rimraf dist",
-    "build": "yarn run clean && yarn lint && tsc",
+    "build": "yarn clean && yarn lint && tsc",
     "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:run -n $1"
