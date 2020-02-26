@@ -31,9 +31,9 @@ jobs:
         port: ${{ secrets.PORT }}
         username: ${{ secrets.USERNAME }}
         host: ${{ secrets.HOST }}
-        source: "."
         rm: true
-        target: "~/flaschenbot"
+        source: "."
+        target: "/${{ secrets.USERNAME }}/${{ secrets.SERVICE_NAME }}"
 
     - name: Deploy production
       if: github.ref == 'refs/heads/master'
@@ -43,5 +43,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.SSHKEY }}
-        script: pm2 restart ${{ secrets.SERVICE_NAME }}
+        script: |
+          yarn --cwd ${{ secrets.SERVICE_NAME }} migration:run
+          pm2 restart ${{ secrets.SERVICE_NAME }}
 
