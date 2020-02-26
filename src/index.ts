@@ -8,7 +8,6 @@ import { postCodeHandler, postCodeChangeHandler } from './service/postCode';
 import { userInformJob, webScrapingJob } from './service/job';
 import { statusHandler } from './service/status';
 import { helpHandler } from './service/help';
-import {FlaschenpostScraper} from "./utils/scraper";
 
 // eslint-disable-next-line
 const Telegraf = require('telegraf');
@@ -22,13 +21,15 @@ connect(process.env.DATABASE_URL)
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
         const job = new CronJob(
-            '* * 10 * * *',
+            '0 0 9 * * *',
             async () => {
                 console.log('Running daily job to identify offers...');
                 await webScrapingJob();
                 await userInformJob(bot);
             },
-            null,
+            () => {
+                    console.log("Successfully ran daily job...")
+            },
             true,
             'Europe/Berlin',
         );
@@ -39,17 +40,6 @@ connect(process.env.DATABASE_URL)
         bot.use(authHandler());
 
         bot.start(async ctx => await welcomeHandler(ctx));
-
-        bot.command('test', async ctx => {
-           const Scraper = new FlaschenpostScraper(process.env.URL);
-
-           const exists = await Scraper.pcIsAvailable("12345");
-
-           if(exists)
-                ctx.reply("existiert");
-           else
-                ctx.reply("nicht");
-        });
 
         bot.command('plz', async ctx => await postCodeHandler(ctx));
 
