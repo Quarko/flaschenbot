@@ -20,6 +20,9 @@ export const statusHandler = async ctx => {
         }
     } catch (error) {
         console.log(error);
-        ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu);
+        ctx.reply(
+            'Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.',
+            ctx.session.menu,
+        );
     }
 };

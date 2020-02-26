@@ -32,7 +32,7 @@ export const stopHandler = async ctx => {
     ctx.reply(
         'Schade das du gehen möchtest. Du wurdest aus dem Verteiler entfernt. Schreibe /start wenn du wieder Angebote bekommen möchtest.',
         Telegraf.Markup.keyboard(['/start'])
-        .resize()
-        .extra(),
-        );
+            .resize()
+            .extra(),
+    );
 };
