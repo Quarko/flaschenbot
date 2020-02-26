@@ -6,12 +6,7 @@ import { PostCode } from '../entity/PostCode';
 let _connection: Connection;
 
 export async function connect(databaseFN: string) {
-    return (_connection = await createConnection({
-        type: 'sqlite',
-        database: databaseFN,
-        entities: [User, Offer, PostCode],
-        logging: true,
-    }));
+    return (_connection = await createConnection());
 }
 
 export function connected() {

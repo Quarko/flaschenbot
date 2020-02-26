@@ -1,7 +1,8 @@
-node_modules
+node_modules/
 
 yarn.lock+
 .env
+github_actions*
 *.sqlite
 .idea/
 .vscode/
@@ -10,3 +11,4 @@ dist/
 tmp/
 temp/
 db/
+
