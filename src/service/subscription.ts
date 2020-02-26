@@ -2,7 +2,7 @@ import { User } from '../entity/User';
 import { getRepository } from 'typeorm';
 
 // eslint-disable-next-line
-const Telegraf = require('telegraf')
+const Telegraf = require('telegraf');
 
 export async function welcomeHandler(ctx) {
     const user = new User();
@@ -21,7 +21,8 @@ export async function welcomeHandler(ctx) {
     user.language = telegramUser.language_code;
     ctx.session.user = await getRepository(User).save(user);
 
-    ctx.reply('Willkommen beim flaschenbot, ich informiere dich regelmäßig über Angebote :)', ctx.session.menu);
+    ctx.reply('Willkommen beim flaschenbot, ich informiere dich regelmäßig über Angebote auf flaschenpost :)\n' +
+        'Schreib mir einfach eine Postleitzahl und ich informiere dich immer um 10:00 Uhr über neue Angebote. Mit dem Kommando /status kannst du jederzeit die Angebote abfragen.', ctx.session.menu);
 }
 
 export const stopHandler = async ctx => {
