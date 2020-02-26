@@ -6,7 +6,7 @@ import {FlaschenpostScraper} from "../utils/scraper";
 
 export const postCodeHandler = async ctx => {
     const user: User = ctx.session.user;
-    const postCodes = await getRepository(PostCode).find({ user: user });
+    const postCodes = await getRepository(PostCode).find({ user: user, isActive: true });
     let message =
         postCodes.length > 0
             ? 'Aktuell sind für dich folgende Postleitzahlen hinterleg: \n'
@@ -28,7 +28,7 @@ export async function postCodeChangeHandler(ctx) {
         return;
     }
 
-    const count = await getRepository(PostCode).count({ postCode: message, user: user });
+    const count = await getRepository(PostCode).count({ postCode: message, user: user, isActive: true});
 
     if (count == 0) {
         const Scraper = new FlaschenpostScraper(process.env.URL);
@@ -43,6 +43,7 @@ export async function postCodeChangeHandler(ctx) {
 
         postCode.user = user;
         postCode.postCode = message;
+        postCode.isActive = true;
         await getRepository(PostCode).save(postCode);
     } else {
         await getRepository(PostCode).update({ postCode: message, user: user }, {isActive: false});
