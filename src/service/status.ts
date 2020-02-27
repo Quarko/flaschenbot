@@ -5,7 +5,7 @@ import { updateOffersForPostCodes } from './job';
 
 export const statusHandler = async ctx => {
     const user: User = ctx.session.user;
-    const postCodes: PostCode[] = await getRepository(PostCode).find({ user: user });
+    const postCodes: PostCode[] = await getRepository(PostCode).find({ user: user, isActive: true });
 
     try {
         const reply = await updateOffersForPostCodes(postCodes, true);

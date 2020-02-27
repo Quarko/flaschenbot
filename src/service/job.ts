@@ -26,10 +26,12 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     let reply = '';
 
     for (const postCode of postCodes) {
-        const latestOffers = await Scraper.runWithPC(postCode.postCode);
+        const latestOffers : FlaschenpostOffer [] = await Scraper.runWithPC(postCode.postCode);
         const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
 
-        for (const latestOffer of latestOffers) {
+        let saveObjects = [];
+
+        latestOffers.forEach((latestOffer) => {
             const exist = offers.some(
                 e =>
                     e.name == latestOffer.name &&
@@ -40,9 +42,11 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
             );
 
             if (!exist) {
-                await getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true });
+                saveObjects.push(getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true }));
             }
-        }
+        });
+
+        await Promise.all(saveObjects);
 
         for (const offer of offers) {
             const exist = latestOffers.some(
@@ -68,7 +72,7 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     return reply;
 };
 export const webScrapingJob = async () => {
-    const postCodes: PostCode[] = await getRepository(PostCode).find();
+    const postCodes: PostCode[] = await getRepository(PostCode).find({isActive: true});
 
     await updateOffersForPostCodes(postCodes, false);
 };
