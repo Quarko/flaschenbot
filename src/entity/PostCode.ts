@@ -6,7 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     OneToMany,
-    ManyToOne,
+    ManyToMany, JoinTable,
 } from 'typeorm';
 import { User } from './User';
 import { Offer } from './Offer';
@@ -19,8 +19,9 @@ export class PostCode {
     @Column({ nullable: false })
     postCode: string;
 
-    @ManyToOne(() => User, {nullable: false})
-    user: User;
+    @ManyToMany(() => User, user => user.postCodes, {nullable: false})
+    @JoinTable()
+    users: User[];
 
     @OneToMany(
         () => Offer,

@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+    ManyToMany
+} from 'typeorm';
 import { PostCode } from './PostCode';
 
 @Entity()
@@ -15,9 +22,9 @@ export class User {
     @Column()
     language: string;
 
-    @OneToMany(
+    @ManyToMany(
         () => PostCode,
-        postCode => postCode.user,
+        postCode => postCode.users,
     )
     postCodes: PostCode[];
 

@@ -83,10 +83,13 @@ export const userInformJob = async bot => {
         .leftJoinAndSelect('post_code.offers', 'offer')
         .getMany();
 
+    console.log(users);
+
     for (const user of users) {
         let reply = '';
 
         for (const postCode of user.postCodes) {
+            console.log(postCode);
             reply += generateMessage(postCode.offers, postCode.postCode);
         }
 

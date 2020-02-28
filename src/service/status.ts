@@ -5,7 +5,11 @@ import { updateOffersForPostCodes } from './job';
 
 export const statusHandler = async ctx => {
     const user: User = ctx.session.user;
-    const postCodes: PostCode[] = await getRepository(PostCode).find({ user: user, isActive: true });
+    const postCodes = await getRepository(PostCode).createQueryBuilder("post_code")
+        .leftJoinAndSelect("post_code.users", "user")
+        .where("post_code.isActive = :isActive", { isActive: true})
+        .andWhere("user.id = :userId", { userId: user.id})
+        .getMany();
 
     try {
         const reply = await updateOffersForPostCodes(postCodes, true);

@@ -1,12 +1,17 @@
 import { User } from '../entity/User';
-import {getConnection, getRepository} from 'typeorm';
+import {getConnection, getManager, getRepository} from 'typeorm';
 import { PostCode } from '../entity/PostCode';
 import { validatePostcode } from '../utils/postcode';
 import {FlaschenpostScraper} from "../utils/scraper";
 
 export const postCodeHandler = async ctx => {
     const user: User = ctx.session.user;
-    const postCodes = await getRepository(PostCode).find({ user: user, isActive: true });
+    const postCodes = await getRepository(PostCode).createQueryBuilder("post_code")
+        .leftJoinAndSelect("post_code.users", "user")
+        .where("post_code.isActive = :isActive", { isActive: true})
+        .andWhere("user.id = :userId", { userId: user.id})
+        .getMany();
+
     let message =
         postCodes.length > 0
             ? 'Aktuell sind für dich folgende Postleitzahlen hinterleg: \n'
@@ -28,9 +33,15 @@ export async function postCodeChangeHandler(ctx) {
         return;
     }
 
-    const count = await getRepository(PostCode).count({ postCode: message, user: user, isActive: true});
+    let postCode = await getRepository(PostCode).createQueryBuilder("post_code")
+        .leftJoinAndSelect("post_code.users", "user")
+        .andWhere("post_code.postCode = :postCode", { postCode: message})
+        .andWhere("user.id = :userId", { userId: user.id})
+        .getOne();
 
-    if (count == 0) {
+    const newPostCode = typeof postCode === 'undefined' || !postCode.isActive;
+
+    if (newPostCode) {
         const Scraper = new FlaschenpostScraper(process.env.URL);
         const exists = await Scraper.pcIsAvailable(message);
 
@@ -39,18 +50,21 @@ export async function postCodeChangeHandler(ctx) {
             return;
         }
 
-        const postCode = new PostCode();
+        if (typeof postCode === 'undefined') {
+            postCode = new PostCode();
+            postCode.users = [ user ];
+            postCode.postCode = message;
+        }
 
-        postCode.user = user;
-        postCode.postCode = message;
         postCode.isActive = true;
-        await getRepository(PostCode).save(postCode);
+        await getManager().save(postCode);
     } else {
-        await getRepository(PostCode).update({ postCode: message, user: user }, {isActive: false});
+        postCode.isActive = false;
+
+        await getManager().save(postCode);
     }
 
-    const reply =
-        count > 0 ? `Die Postleitzahl ${message} wurde entfernt` : `Die Postleitzahl ${message} wurde hinzugefügt`;
+    const reply = newPostCode ? `Die Postleitzahl ${message} wurde hinzugefügt` : `Die Postleitzahl ${message} wurde entfernt`;
 
     ctx.reply(reply, ctx.session.menu);
 }
