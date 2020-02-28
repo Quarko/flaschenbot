@@ -46,7 +46,7 @@ export async function postCodeChangeHandler(ctx) {
         const exists = await Scraper.pcIsAvailable(message);
 
         if(!exists) {
-            ctx.reply('Die Postleitzahl wird von flaschenpost leider noch nicht angeboten.', ctx.session.menu);
+            ctx.reply('Die Postleitzahl wird von flaschenpost leider noch nicht angeboten. Du kannst hier nachschauen, wo flaschenpost bereits angeboten wird: https://www.flaschenpost.de/liefergebiete', ctx.session.menu);
             return;
         }
 
