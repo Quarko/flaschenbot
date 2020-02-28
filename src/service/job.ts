@@ -65,7 +65,7 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
         }
 
         if (requireMessage) {
-            reply += generateMessage(latestOffers, postCode.postCode);
+            reply += `${generateMessage(latestOffers, postCode.postCode)}\n`;
         }
     }
 
