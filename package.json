@@ -13,7 +13,7 @@
     "build": "yarn clean && yarn lint && tsc",
     "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
-    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:run -n $1"
+    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate"
   },
   "dependencies": {
     "@types/node": "^13.1.8",
