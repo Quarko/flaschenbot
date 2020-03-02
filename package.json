@@ -31,7 +31,7 @@
     "sqlite3": "^4.1.1",
     "telegraf": "^3.36.0",
     "typeorm": "^0.2.22",
-    "yarn": "^1.21.1"
+    "yarn": "^1.22.0"
   },
   "devDependencies": {
     "@sentry/typescript": "^5.10.0",
