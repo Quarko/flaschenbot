@@ -16,6 +16,7 @@
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate"
   },
   "dependencies": {
+    "@sentry/node": "^5.13.1",
     "@types/node": "^13.1.8",
     "add": "^2.0.6",
     "babel-core": "^6.26.3",
@@ -33,6 +34,7 @@
     "yarn": "^1.21.1"
   },
   "devDependencies": {
+    "@sentry/typescript": "^5.10.0",
     "@types/cron": "^1.7.1",
     "@typescript-eslint/eslint-plugin": "^2.20.0",
     "@typescript-eslint/parser": "^2.20.0",

@@ -8,6 +8,7 @@ import { postCodeHandler, postCodeChangeHandler } from './service/postCode';
 import { userInformJob, webScrapingJob } from './service/job';
 import { statusHandler } from './service/status';
 import { helpHandler } from './service/help';
+import * as Sentry from '@sentry/node';
 
 // eslint-disable-next-line
 const Telegraf = require('telegraf');
@@ -15,6 +16,8 @@ const Telegraf = require('telegraf');
 const session = require('telegraf/session');
 
 config();
+
+Sentry.init({ dsn: process.env.SENTRY_DSN });
 
 connect(process.env.DATABASE_URL)
     .then(async () => {
@@ -41,6 +44,12 @@ connect(process.env.DATABASE_URL)
 
         bot.start(async ctx => await welcomeHandler(ctx));
 
+
+        bot.command('test', async ctx => {
+                await webScrapingJob();
+                await userInformJob(bot);
+        });
+
         bot.command('plz', async ctx => await postCodeHandler(ctx));
 
         bot.command('stop', async ctx => await stopHandler(ctx));
@@ -50,6 +59,11 @@ connect(process.env.DATABASE_URL)
         bot.command('status', async ctx => await statusHandler(ctx));
 
         bot.on('text', async ctx => await postCodeChangeHandler(ctx));
+
+        bot.catch((err, ctx) => {
+                console.error("Error: ", err);
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+        });
 
         bot.launch();
     })
