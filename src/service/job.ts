@@ -26,12 +26,10 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     let reply = '';
 
     for (const postCode of postCodes) {
-        const latestOffers : Offer [] = await Scraper.runWithPC(postCode.postCode);
+        const latestOffers: Offer[] = await Scraper.runWithPC(postCode.postCode);
         const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
 
-        let saveObjects = [];
-
-        latestOffers.forEach((latestOffer) => {
+        for (const latestOffer of latestOffers) {
             const exist = offers.some(
                 e =>
                     e.name == latestOffer.name &&
@@ -42,11 +40,9 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
             );
 
             if (!exist) {
-                saveObjects.push(getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true }));
+                await getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true });
             }
-        });
-
-        await Promise.all(saveObjects);
+        }
 
         for (const offer of offers) {
             const exist = latestOffers.some(
@@ -81,15 +77,13 @@ export const userInformJob = async bot => {
         .createQueryBuilder('user')
         .leftJoinAndSelect('user.postCodes', 'post_code')
         .leftJoinAndSelect('post_code.offers', 'offer')
+        .where('offer.isLatest = :latest', { latest: true })
         .getMany();
-
-    console.log(users);
 
     for (const user of users) {
         let reply = '';
 
         for (const postCode of user.postCodes) {
-            console.log(postCode);
             reply += generateMessage(postCode.offers, postCode.postCode);
         }
 

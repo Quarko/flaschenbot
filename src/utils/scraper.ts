@@ -27,7 +27,10 @@ export class FlaschenpostScraper {
     }
 
     async pcIsAvailable(pc: string): Promise<boolean> {
-        const browser = await puppeteer.launch({ args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'], headless: true });
+        const browser = await puppeteer.launch({
+            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+            headless: true,
+        });
         const page = await browser.newPage();
 
         try {
@@ -35,11 +38,11 @@ export class FlaschenpostScraper {
             await page.waitFor('input#validZipcode');
             await page.type('input#validZipcode', pc);
             await page.click('button.zip--button');
-            await page.waitForSelector('.fp-modal_inner', {timeout: this.timeout, hidden: true});
+            await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
 
             return true;
         } catch (error) {
-            return false
+            return false;
         }
     }
 
@@ -58,66 +61,88 @@ export class FlaschenpostScraper {
             await page.goto(`${this.baseUrl}/bier/${category}`);
             await page.waitForSelector('#fp-productList', { timeout: this.timeout });
 
-            const offers: Offer[] = await page.evaluate(() => {
-                const elements: any = document.getElementsByClassName('fp-productList_highlight');
+            const offers = await page.evaluate(category => {
+                const elements: any = [...document.getElementsByClassName('fp-productList_highlight')];
                 const tmp = [];
-                for (const e of elements) {
+
+                elements.filter(e => {
+                    if (e.innerText === 'TOP-ANGEBOT') {
+                        return e;
+                    }
+                }).map(e => {
+                    //for(const e of elements) {
                     if (e.innerText === 'TOP-ANGEBOT') {
                         const element = e.parentElement;
                         const name = element
                             .getElementsByClassName('fp-productList_productName')[0]
                             .textContent.split('\n')[1]
                             .trim();
-                        const priceOffers = element.getElementsByClassName('fp-productList_detail');
-                        for (const priceOffer of priceOffers) {
-                            const offer = new Offer();
-                            offer.name = name;
-                            offer.category = "pils";
 
-                            const bottleDetails = priceOffer
-                                .getElementsByClassName('fp-productList_bottleDetails')[0]
-                                .innerText.split('\n')[0];
-                            offer.bottleAmount = parseInt(bottleDetails.split(' ')[0]);
-                            offer.bottleSize = parseFloat(
-                                bottleDetails
-                                    .split(' ')[2]
-                                    .replace('L', '')
+                        const priceOffer = element.getElementsByClassName('fp-productList_detail')[0];
+
+                        const bottleDetails = priceOffer
+                            .getElementsByClassName('fp-productList_bottleDetails')[0]
+                            .innerText.split('\n')[0];
+
+                        const offer = {
+                            name: name,
+                            category: category,
+                            bottleAmount: 0,
+                            bottleSize: 0,
+                            oldPrice: 0.0,
+                            price: 0.0,
+                        };
+
+                        offer.bottleAmount = parseInt(bottleDetails.split(' ')[0]);
+                        offer.bottleSize = parseFloat(
+                            bottleDetails
+                                .split(' ')[2]
+                                .replace('L', '')
+                                .replace(',', '.'),
+                        );
+
+                        if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
+                            offer.oldPrice = parseFloat(
+                                priceOffer
+                                    .getElementsByClassName('fp-productList_price--stroke')[0]
+                                    .innerText.split(' ')[0]
                                     .replace(',', '.'),
                             );
+                        } else {
+                            return;
+                        }
 
-                            if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
-                                offer.oldPrice = parseFloat(
-                                    priceOffer
-                                        .getElementsByClassName('fp-productList_price--stroke')[0]
-                                        .innerText.split(' ')[0]
-                                        .replace(',', '.'),
-                                );
-                            } else {
-                                continue;
-                            }
+                        if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
+                            offer.price = parseFloat(
+                                priceOffer
+                                    .getElementsByClassName('fp-price-is-special-offer')[0]
+                                    .innerText.split(' ')[0]
+                                    .replace(',', '.'),
+                            );
+                        } else {
+                            return;
+                        }
 
-                            if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
-                                offer.price = parseFloat(
-                                    priceOffer
-                                        .getElementsByClassName('fp-price-is-special-offer')[0]
-                                        .innerText.split(' ')[0]
-                                        .replace(',', '.'),
-                                );
-                            } else {
-                                continue;
-                            }
-
-                            if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
-                                tmp.push(offer);
-                            }
+                        if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
+                            tmp.push(offer);
                         }
                     }
-                }
+                });
+                return tmp;
+            }, 'pils');
+            await browser.close();
+            return offers.map(offer => {
+                const tmp = new Offer();
+
+                tmp.name = offer.name;
+                tmp.category = offer.category;
+                tmp.bottleAmount = offer.bottleAmount;
+                tmp.bottleSize = offer.bottleSize;
+                tmp.oldPrice = offer.oldPrice;
+                tmp.price = offer.price;
+
                 return tmp;
             });
-            await browser.close();
-
-            return offers;
         } catch (err) {
             return err;
         }
