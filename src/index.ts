@@ -25,34 +25,82 @@ connect(process.env.DATABASE_URL)
     .then(async () => {
         const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-        const job = new CronJob(
+        const notificationJob = new CronJob(
             '0 0 9 * * *',
             async () => {
-                console.log('Running daily job to identify offers...');
-                await webScrapingJob();
-                await userInformJob(bot);
+                try {
+                    console.log('Running notification job to notify users by new offers...');
+                    await userInformJob(bot);
+                } catch (err) {
+                    console.error("Error: ", err);
+                }
             },
             () => {
-                    console.log("Successfully ran daily job...")
+                    console.log("Successfully ran notification job...")
             },
             true,
             'Europe/Berlin',
         );
 
-        job.start();
+        const scrapingJob = new CronJob('0 29 * * * *', async () => {
+            try {
+                console.log('Running web scraping job to identify offers...');
+                await webScrapingJob();
+            } catch (err) {
+                console.error("Error: ", err);
+            }
+        },
+        () => {
+            console.log("Successfully ran webScraping job...")
+        },
+        true,
+        'Europe/Berlin');
+
+        notificationJob.start();
+        scrapingJob.start();
 
         bot.use(session());
         bot.use(authHandler());
 
-        bot.start(async ctx => await welcomeHandler(ctx));
+        bot.start(async ctx => {
+            try {
+                await welcomeHandler(ctx);
+            } catch (err) {
+                console.error("Error: ", err);
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+            
+            }
+        });
 
-        bot.command('plz', async ctx => await postCodeHandler(ctx));
+        bot.command('plz', async ctx => {
+            try {
+                await postCodeHandler(ctx);
+            } catch (err) {
+                console.error("Error: ", err);
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+            
+            }
+        });
 
-        bot.command('stop', async ctx => await stopHandler(ctx));
-
+        bot.command('stop', async ctx => {
+            try {
+                await stopHandler(ctx);
+            } catch (err) {
+                console.error("Error: ", err);
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+            
+            }
+        });
         bot.command('help', ctx => helpHandler(ctx));
 
-        bot.command('status', async ctx => await statusHandler(ctx));
+        bot.command('status', async ctx => {
+            try {
+                await statusHandler(ctx)
+            } catch (err) {
+                console.error("Error: ", err);
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+            }
+        });
 
         bot.on('text', async ctx => await postCodeChangeHandler(ctx));
 
