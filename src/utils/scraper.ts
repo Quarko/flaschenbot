@@ -39,9 +39,11 @@ export class FlaschenpostScraper {
             await page.type('input#validZipcode', pc);
             await page.click('button.zip--button');
             await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
-
+            await browser.close();
             return true;
         } catch (error) {
+            await browser.close();
+
             return false;
         }
     }
@@ -144,6 +146,8 @@ export class FlaschenpostScraper {
                 return tmp;
             });
         } catch (err) {
+            await browser.close();
+
             return err;
         }
     }
