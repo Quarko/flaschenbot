@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "watch": "nodemon src/index.ts",
+    "watch": "NODE_ENV=development nodemon src/index.ts",
     "clean": "rimraf dist",
     "build": "yarn clean && yarn lint && tsc",
     "lint": "tsc --noEmit && eslint src/**/*.ts --quiet --fix",

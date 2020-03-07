@@ -17,7 +17,9 @@ const session = require('telegraf/session');
 
 config();
 
-Sentry.init({ dsn: process.env.SENTRY_DSN });
+if(process.env.NODE_ENV !== 'development') {
+    Sentry.init({ dsn: process.env.SENTRY_DSN });
+}
 
 connect(process.env.DATABASE_URL)
     .then(async () => {
@@ -43,12 +45,6 @@ connect(process.env.DATABASE_URL)
         bot.use(authHandler());
 
         bot.start(async ctx => await welcomeHandler(ctx));
-
-
-        bot.command('test', async ctx => {
-                await webScrapingJob();
-                await userInformJob(bot);
-        });
 
         bot.command('plz', async ctx => await postCodeHandler(ctx));
 
