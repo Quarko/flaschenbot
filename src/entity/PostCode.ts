@@ -16,7 +16,7 @@ export class PostCode {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, unique: true })
     postCode: string;
 
     @ManyToMany(() => User, user => user.postCodes, {nullable: false})
@@ -29,9 +29,6 @@ export class PostCode {
     )
     @JoinColumn()
     offers: Offer[];
-
-    @Column({ default: true, nullable: false})
-    isActive: boolean;
 
     @CreateDateColumn()
     createdAt: string;

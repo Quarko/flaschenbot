@@ -8,8 +8,7 @@ export const postCodeHandler = async ctx => {
     const user: User = ctx.session.user;
     const postCodes = await getRepository(PostCode).createQueryBuilder("post_code")
         .leftJoinAndSelect("post_code.users", "user")
-        .where("post_code.isActive = :isActive", { isActive: true})
-        .andWhere("user.id = :userId", { userId: user.id})
+        .where("user.id = :userId", { userId: user.id})
         .getMany();
 
     let message =
@@ -33,35 +32,44 @@ export async function postCodeChangeHandler(ctx) {
         return;
     }
 
-    let postCode = await getRepository(PostCode).createQueryBuilder("post_code")
+    let userPostCode = await getRepository(PostCode).createQueryBuilder("post_code")
         .leftJoinAndSelect("post_code.users", "user")
         .andWhere("post_code.postCode = :postCode", { postCode: message})
         .andWhere("user.id = :userId", { userId: user.id})
         .getOne();
 
-    const newPostCode = typeof postCode === 'undefined' || !postCode.isActive;
+    const newPostCode = typeof userPostCode === 'undefined';
 
     if (newPostCode) {
-        const Scraper = new FlaschenpostScraper(process.env.URL);
-        const exists = await Scraper.pcIsAvailable(message);
+        let postCode = await getRepository(PostCode).findOne({postCode: message});
 
-        if(!exists) {
-            ctx.reply('Die Postleitzahl wird von flaschenpost leider noch nicht angeboten. Du kannst hier nachschauen, wo flaschenpost bereits angeboten wird: https://www.flaschenpost.de/liefergebiete', ctx.session.menu);
-            return;
-        }
+        if(typeof postCode === "undefined") {
+            const Scraper = new FlaschenpostScraper(process.env.URL);
+            const exists = await Scraper.pcIsAvailable(message);
 
-        if (typeof postCode === 'undefined') {
+            if(!exists) {
+                ctx.reply('Die Postleitzahl wird von flaschenpost leider noch nicht angeboten. Du kannst hier nachschauen, wo flaschenpost bereits angeboten wird: https://www.flaschenpost.de/liefergebiete', ctx.session.menu);
+                return;
+            }
             postCode = new PostCode();
             postCode.users = [ user ];
             postCode.postCode = message;
+
+        } else {
+            if (typeof postCode.users === "object") {
+                postCode.users.push(user);
+            } else {
+                postCode.users = [ user ];
+            }
         }
 
-        postCode.isActive = true;
         await getManager().save(postCode);
     } else {
-        postCode.isActive = false;
+        userPostCode.users = userPostCode.users.filter(u => {
+            u.id != user.id
+        });
 
-        await getManager().save(postCode);
+        await getManager().save(userPostCode);
     }
 
     const reply = newPostCode ? `Die Postleitzahl ${message} wurde hinzugefügt` : `Die Postleitzahl ${message} wurde entfernt`;

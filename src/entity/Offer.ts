@@ -29,7 +29,9 @@ export class Offer {
 
     @ManyToOne(
         () => PostCode,
-        postCode => postCode.offers,
+        postCode => postCode.offers, {
+            nullable: false
+        }
     )
     postCode: PostCode;
 
