@@ -1,10 +1,10 @@
 import { PostCode } from '../entity/PostCode';
-import { FlaschenpostOffer, FlaschenpostScraper } from '../utils/scraper';
+import { FlaschenpostScraper } from '../utils/scraper';
 import { getRepository } from 'typeorm';
 import { Offer } from '../entity/Offer';
 import { User } from '../entity/User';
 
-export function generateMessage(offers: FlaschenpostOffer[], postCode: string): string {
+export function generateMessage(offers: Offer[], postCode: string): string {
     let reply = '';
 
     if (offers.length > 0) {
@@ -26,7 +26,7 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     let reply = '';
 
     for (const postCode of postCodes) {
-        const latestOffers : FlaschenpostOffer [] = await Scraper.runWithPC(postCode.postCode);
+        const latestOffers : Offer [] = await Scraper.runWithPC(postCode.postCode);
         const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
 
         let saveObjects = [];
@@ -72,7 +72,7 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     return reply;
 };
 export const webScrapingJob = async () => {
-    const postCodes: PostCode[] = await getRepository(PostCode).find({isActive: true});
+    const postCodes: PostCode[] = await getRepository(PostCode).find();
 
     await updateOffersForPostCodes(postCodes, false);
 };

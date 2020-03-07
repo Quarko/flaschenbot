@@ -1,4 +1,5 @@
 import * as puppeteer from 'puppeteer';
+import { Offer } from '../entity/Offer';
 
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
@@ -42,7 +43,7 @@ export class FlaschenpostScraper {
         }
     }
 
-    async runWithPC(pc: string): Promise<FlaschenpostOffer[]> {
+    async runWithPC(pc: string): Promise<Offer[]> {
         const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true });
         const page = await browser.newPage();
 
@@ -57,7 +58,7 @@ export class FlaschenpostScraper {
             await page.goto(`${this.baseUrl}/bier/${category}`);
             await page.waitForSelector('#fp-productList', { timeout: this.timeout });
 
-            const offers: FlaschenpostOffer[] = await page.evaluate(() => {
+            const offers: Offer[] = await page.evaluate(() => {
                 const elements: any = document.getElementsByClassName('fp-productList_highlight');
                 const tmp = [];
                 for (const e of elements) {
@@ -69,16 +70,9 @@ export class FlaschenpostScraper {
                             .trim();
                         const priceOffers = element.getElementsByClassName('fp-productList_detail');
                         for (const priceOffer of priceOffers) {
-                            const offer: FlaschenpostOffer = {
-                                name: name,
-                                bottleAmount: 0,
-                                bottleSize: 0,
-                                price: 0,
-                                oldPrice: 0,
-                                category: 'pils',
-                            };
-
+                            const offer = new Offer();
                             offer.name = name;
+                            offer.category = "pils";
 
                             const bottleDetails = priceOffer
                                 .getElementsByClassName('fp-productList_bottleDetails')[0]
@@ -128,13 +122,4 @@ export class FlaschenpostScraper {
             return err;
         }
     }
-}
-
-export interface FlaschenpostOffer {
-    name: string;
-    bottleSize: number;
-    bottleAmount: number;
-    oldPrice: number;
-    price: number;
-    category: string;
 }
