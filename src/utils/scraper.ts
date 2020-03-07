@@ -47,7 +47,7 @@ export class FlaschenpostScraper {
     }
 
     async runWithPC(pc: string): Promise<Offer[]> {
-        const browser = await puppeteer.launch({ args: ['--no-sandbox'], headless: true });
+        const browser = await puppeteer.launch({ args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'], headless: true });
         const page = await browser.newPage();
 
         try {
