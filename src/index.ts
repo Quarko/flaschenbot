@@ -42,7 +42,7 @@ connect(process.env.DATABASE_URL)
             'Europe/Berlin',
         );
 
-        const scrapingJob = new CronJob('0 29 * * * *', async () => {
+        const scrapingJob = new CronJob('0 /30 * * * *', async () => {
             try {
                 console.log('Running web scraping job to identify offers...');
                 await webScrapingJob();
