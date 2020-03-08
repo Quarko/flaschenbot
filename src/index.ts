@@ -90,4 +90,4 @@ connect(process.env.DATABASE_URL)
 
         bot.launch();
     })
-    .catch(err => console.log(err));
+    .catch(err => console.error(err));
