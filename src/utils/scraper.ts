@@ -49,7 +49,10 @@ export class FlaschenpostScraper {
     }
 
     async runWithPC(pc: string): Promise<Offer[]> {
-        const browser = await puppeteer.launch({ args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'], headless: true });
+        const browser = await puppeteer.launch({
+            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+            headless: true,
+        });
         const page = await browser.newPage();
 
         try {
@@ -67,69 +70,71 @@ export class FlaschenpostScraper {
                 const elements: any = [...document.getElementsByClassName('fp-productList_highlight')];
                 const tmp = [];
 
-                elements.filter(e => {
-                    if (e.innerText === 'TOP-ANGEBOT') {
-                        return e;
-                    }
-                }).map(e => {
-                    //for(const e of elements) {
-                    if (e.innerText === 'TOP-ANGEBOT') {
-                        const element = e.parentElement;
-                        const name = element
-                            .getElementsByClassName('fp-productList_productName')[0]
-                            .textContent.split('\n')[1]
-                            .trim();
+                elements
+                    .filter(e => {
+                        if (e.innerText === 'TOP-ANGEBOT') {
+                            return e;
+                        }
+                    })
+                    .map(e => {
+                        //for(const e of elements) {
+                        if (e.innerText === 'TOP-ANGEBOT') {
+                            const element = e.parentElement;
+                            const name = element
+                                .getElementsByClassName('fp-productList_productName')[0]
+                                .textContent.split('\n')[1]
+                                .trim();
 
-                        const priceOffer = element.getElementsByClassName('fp-productList_detail')[0];
+                            const priceOffer = element.getElementsByClassName('fp-productList_detail')[0];
 
-                        const bottleDetails = priceOffer
-                            .getElementsByClassName('fp-productList_bottleDetails')[0]
-                            .innerText.split('\n')[0];
+                            const bottleDetails = priceOffer
+                                .getElementsByClassName('fp-productList_bottleDetails')[0]
+                                .innerText.split('\n')[0];
 
-                        const offer = {
-                            name: name,
-                            category: category,
-                            bottleAmount: 0,
-                            bottleSize: 0,
-                            oldPrice: 0.0,
-                            price: 0.0,
-                        };
+                            const offer = {
+                                name: name,
+                                category: category,
+                                bottleAmount: 0,
+                                bottleSize: 0,
+                                oldPrice: 0.0,
+                                price: 0.0,
+                            };
 
-                        offer.bottleAmount = parseInt(bottleDetails.split(' ')[0]);
-                        offer.bottleSize = parseFloat(
-                            bottleDetails
-                                .split(' ')[2]
-                                .replace('L', '')
-                                .replace(',', '.'),
-                        );
-
-                        if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
-                            offer.oldPrice = parseFloat(
-                                priceOffer
-                                    .getElementsByClassName('fp-productList_price--stroke')[0]
-                                    .innerText.split(' ')[0]
+                            offer.bottleAmount = parseInt(bottleDetails.split(' ')[0]);
+                            offer.bottleSize = parseFloat(
+                                bottleDetails
+                                    .split(' ')[2]
+                                    .replace('L', '')
                                     .replace(',', '.'),
                             );
-                        } else {
-                            return;
-                        }
 
-                        if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
-                            offer.price = parseFloat(
-                                priceOffer
-                                    .getElementsByClassName('fp-price-is-special-offer')[0]
-                                    .innerText.split(' ')[0]
-                                    .replace(',', '.'),
-                            );
-                        } else {
-                            return;
-                        }
+                            if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
+                                offer.oldPrice = parseFloat(
+                                    priceOffer
+                                        .getElementsByClassName('fp-productList_price--stroke')[0]
+                                        .innerText.split(' ')[0]
+                                        .replace(',', '.'),
+                                );
+                            } else {
+                                return;
+                            }
 
-                        if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
-                            tmp.push(offer);
+                            if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
+                                offer.price = parseFloat(
+                                    priceOffer
+                                        .getElementsByClassName('fp-price-is-special-offer')[0]
+                                        .innerText.split(' ')[0]
+                                        .replace(',', '.'),
+                                );
+                            } else {
+                                return;
+                            }
+
+                            if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
+                                tmp.push(offer);
+                            }
                         }
-                    }
-                });
+                    });
                 return tmp;
             }, 'pils');
             await browser.close();
