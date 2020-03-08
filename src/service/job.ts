@@ -8,7 +8,7 @@ export function generateMessage(offers: Offer[], postCode: string): string {
     let reply = '';
 
     if (offers.length > 0) {
-        reply += `Angebote in ${postCode} für Pils lauten:\n`;
+        reply += `Angebote in ${postCode} für Pils:\n`;
     } else {
         return `Keine Angebote für die Postleitzahl ${postCode}`;
     }
@@ -40,7 +40,8 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
             );
 
             if (!exist) {
-                await getRepository(Offer).save({ ...latestOffer, postCode: postCode, isLatest: true });
+                const newOffer = { ...latestOffer, postCode: postCode, isLatest: true };
+                await getRepository(Offer).save(newOffer);
             }
         }
 

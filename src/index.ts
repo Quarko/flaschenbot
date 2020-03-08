@@ -9,9 +9,8 @@ import { userInformJob, webScrapingJob } from './service/job';
 import { statusHandler } from './service/status';
 import { helpHandler } from './service/help';
 import * as Sentry from '@sentry/node';
+import { bot } from './utils/bot';
 
-// eslint-disable-next-line
-const Telegraf = require('telegraf');
 // eslint-disable-next-line
 const session = require('telegraf/session');
 
@@ -23,25 +22,6 @@ if(process.env.NODE_ENV !== 'development') {
 
 connect(process.env.DATABASE_URL)
     .then(async () => {
-        const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
-
-        const notificationJob = new CronJob(
-            '0 0 9 * * *',
-            async () => {
-                try {
-                    console.log('Running notification job to notify users by new offers...');
-                    await userInformJob(bot);
-                } catch (err) {
-                    console.error("Error: ", err);
-                }
-            },
-            () => {
-                    console.log("Successfully ran notification job...")
-            },
-            true,
-            'Europe/Berlin',
-        );
-
         const scrapingJob = new CronJob('0 0,30 * * * *', async () => {
             try {
                 console.log('Running web scraping job to identify offers...');
@@ -56,7 +36,6 @@ connect(process.env.DATABASE_URL)
         true,
         'Europe/Berlin');
 
-        notificationJob.start();
         scrapingJob.start();
 
         bot.use(session());
