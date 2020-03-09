@@ -4,7 +4,7 @@ import { generateMessage } from '../service/job';
 import { bot } from '../utils/bot';
 
 @EventSubscriber()
-export class PostSubscriber implements EntitySubscriberInterface<Offer> {
+export class OfferSubscriber implements EntitySubscriberInterface<Offer> {
     /**
      * Indicates that this subscriber only listen to Post events.
      */
