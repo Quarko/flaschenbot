@@ -100,13 +100,15 @@ export class FlaschenpostScraper {
                                 price: 0.0,
                             };
 
-                            offer.bottleAmount = parseInt(bottleDetails.split(' ')[0]);
-                            offer.bottleSize = parseFloat(
-                                bottleDetails
-                                    .split(' ')[2]
-                                    .replace('L', '')
-                                    .replace(',', '.'),
-                            );
+                            if (bottleDetails.length >= 2) {
+                                offer.bottleAmount = parseInt(bottleDetails.split(' ')[bottleDetails.length - 2]);
+                                offer.bottleSize = parseFloat(
+                                    bottleDetails
+                                        .split(' ')[bottleDetails.length - 1]
+                                        .replace('L', '')
+                                        .replace(',', '.'),
+                                );
+                            }
 
                             if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
                                 offer.oldPrice = parseFloat(
