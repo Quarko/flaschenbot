@@ -49,7 +49,7 @@ export class FlaschenpostScraper {
     }
 
     private async getOffers(category: string, page) {
-        return await page.evaluate(async (category) => {
+        return await page.evaluate(async category => {
             const elements: any = [...document.getElementsByClassName('fp-productList_highlight')];
             const tmp = [];
 
@@ -70,8 +70,7 @@ export class FlaschenpostScraper {
 
                         const priceOffer = element.getElementsByClassName('fp-productList_detail')[0];
 
-                        const bottleDetails = priceOffer
-                            .getElementsByClassName('fp-productList_bottleInfo')[0]
+                        const bottleDetails = priceOffer.getElementsByClassName('fp-productList_bottleInfo')[0]
                             .innerText;
 
                         const offer = {
@@ -86,36 +85,28 @@ export class FlaschenpostScraper {
                         if (bottleDetails.length >= 2) {
                             const split = bottleDetails.split(' ');
                             offer.bottleAmount = parseInt(split[split.length - 4]);
-                            offer.bottleSize = parseFloat(
-                                split[split.length - 2]
-                                    .replace('L', '')
-                                    .replace(',', '.'),
-                            );
+                            offer.bottleSize = parseFloat(split[split.length - 2].replace('L', '').replace(',', '.'));
                         }
 
                         if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
-
                             offer.oldPrice = parseFloat(
                                 priceOffer
                                     .getElementsByClassName('fp-productList_price--stroke')[0]
                                     .innerText.split(' ')[0]
                                     .replace(',', '.'),
                             );
-                        }
-                        else {
+                        } else {
                             return;
                         }
 
                         if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
-
                             offer.price = parseFloat(
                                 priceOffer
                                     .getElementsByClassName('fp-price-is-special-offer')[0]
                                     .innerText.split(' ')[0]
                                     .replace(',', '.'),
                             );
-                        }
-                        else {
+                        } else {
                             return;
                         }
 
@@ -126,7 +117,7 @@ export class FlaschenpostScraper {
                 });
             return await new Promise(resolve => {
                 resolve(tmp);
-            })
+            });
         }, category);
     }
 
@@ -152,17 +143,17 @@ export class FlaschenpostScraper {
                 await page.goto(`${this.baseUrl}/bier/${category}`);
 
                 try {
-                    const failure = await page.$eval("h2", e => e.innerHTML);
-                    console.log("Fehler: ", failure);
-                    if (failure.trim() === "Fehler!") {
+                    const failure = await page.$eval('h2', e => e.innerHTML);
+                    console.log('Fehler: ', failure);
+                    if (failure.trim() === 'Fehler!') {
                         continue;
                     }
-                } catch(error) {
+                } catch (error) {
                     console.log(`Skipping category ${category} because it does not exist at postcode ${pc}`);
                 }
 
                 await page.waitForSelector('#fp-productList', { timeout: this.timeout });
-                
+
                 let offers: Offer[];
                 try {
                     offers = await this.getOffers(category, page);
@@ -172,14 +163,13 @@ export class FlaschenpostScraper {
 
                 console.log(`Found ${offers.length} results for ${pc}`);
 
-                result = [ ...result, ...offers];
+                result = [...result, ...offers];
             }
             return result;
-
         } catch (err) {
             await browser.close();
 
-            console.log("Scraper Error: ", err);
+            console.log('Scraper Error: ', err);
         } finally {
             await browser.close();
         }
