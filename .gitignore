@@ -1,6 +1,6 @@
 node_modules/
 
-yarn.lock+
+package-json.lock
 .env
 github_actions*
 *.sqlite
