@@ -35,16 +35,18 @@ export class FlaschenpostScraper {
 
         try {
             await page.goto(this.baseUrl);
-            await page.waitFor('input#validZipcode');
-            await page.type('input#validZipcode', pc);
+            await page.waitFor('input.fp-input--hasVal');
+            await page.type('input.fp-input--hasVal', pc);
             await page.click('button.zip--button');
-            await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
-            await browser.close();
-            return true;
+            const result = await page.evaluate(() => {
+                const header = document.getElementsByClassName("fp-header_cat").length
+                return header > 0;
+            })
+            return result;
         } catch (error) {
+            console.log("Error: ", error);
+        } finally {
             await browser.close();
-
-            return false;
         }
     }
 
@@ -130,8 +132,8 @@ export class FlaschenpostScraper {
 
         try {
             await page.goto(this.baseUrl);
-            await page.waitFor('input#validZipcode');
-            await page.type('input#validZipcode', pc);
+            await page.waitFor('input.fp-input--hasVal');
+            await page.type('input.fp-input--hasVal', pc);
             await page.click('button.zip--button');
             await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
 
@@ -142,19 +144,21 @@ export class FlaschenpostScraper {
 
                 await page.goto(`${this.baseUrl}/bier/${category}`);
 
-                try {
-                    const failure = await page.$eval('h2', e => e.innerHTML);
-                    console.log('Fehler: ', failure);
-                    if (failure.trim() === 'Fehler!') {
-                        continue;
-                    }
-                } catch (error) {
+                const exists = await page.evaluate(() => {
+                    const header = document.getElementsByTagName('h2').length;
+
+                    return header > 0;
+                })
+         
+                if (exists) {
                     console.log(`Skipping category ${category} because it does not exist at postcode ${pc}`);
-                }
+                    continue;
+                }  
 
                 await page.waitForSelector('#fp-productList', { timeout: this.timeout });
 
                 let offers: Offer[];
+
                 try {
                     offers = await this.getOffers(category, page);
                 } catch (error) {
