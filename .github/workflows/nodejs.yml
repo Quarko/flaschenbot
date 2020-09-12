@@ -17,8 +17,10 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: yarn install
-    - run: yarn build
+    - name: Install dependencies
+      run: yarn install
+    - name: Build application
+      run: yarn build
       env:
         CI: true
     - name: 'Automated Version Bump'
