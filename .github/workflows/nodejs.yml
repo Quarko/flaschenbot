@@ -25,9 +25,11 @@ jobs:
       if: github.ref != 'refs/heads/master' && !contains(github.ref, 'merge')
       uses:  'phips28/gh-action-bump-version@master'
       
-    - run: echo '${{ secrets.ENV_FILE}}' > .env
+    - name: 'Setup environment'
+      run: echo '${{ secrets.ENV_FILE}}' > .env
       if: github.ref == 'refs/heads/master'
-    - run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
+    - name: 'Setup database'
+      run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
       if: github.ref == 'refs/heads/master'
 
     - name: Copy file via scp
