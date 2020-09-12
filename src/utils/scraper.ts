@@ -39,12 +39,12 @@ export class FlaschenpostScraper {
             await page.type('input.fp-input--hasVal', pc);
             await page.click('button.zip--button');
             const result = await page.evaluate(() => {
-                const header = document.getElementsByClassName("fp-header_cat").length
+                const header = document.getElementsByClassName('fp-header_cat').length;
                 return header > 0;
-            })
+            });
             return result;
         } catch (error) {
-            console.log("Error: ", error);
+            console.log('Error: ', error);
         } finally {
             await browser.close();
         }
@@ -148,12 +148,12 @@ export class FlaschenpostScraper {
                     const header = document.getElementsByTagName('h2').length;
 
                     return header > 0;
-                })
-         
+                });
+
                 if (exists) {
                     console.log(`Skipping category ${category} because it does not exist at postcode ${pc}`);
                     continue;
-                }  
+                }
 
                 await page.waitForSelector('#fp-productList', { timeout: this.timeout });
 
