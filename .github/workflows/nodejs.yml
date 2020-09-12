@@ -23,7 +23,10 @@ jobs:
     - run: yarn build
       env:
         CI: true
-
+    - name:  'Automated Version Bump'
+      if: github.ref == 'refs/heads/master'
+      uses:  'phips28/gh-action-bump-version@master'
+      
     - name: Copy file via scp
       if: github.ref == 'refs/heads/master'
       uses: appleboy/scp-action@master
@@ -35,10 +38,6 @@ jobs:
         rm: true
         source: "."
         target: "/${{ secrets.USERNAME }}/${{ secrets.SERVICE_NAME }}"
-    
-    - name:  'Automated Version Bump'
-      if: github.ref == 'refs/heads/master'
-      uses:  'phips28/gh-action-bump-version@master'
 
     - name: Deploy production
       if: github.ref == 'refs/heads/master'
