@@ -1,6 +1,6 @@
 {
   "name": "flaschenbot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Bot for flaschenpost.de",
   "main": "src/index.ts",
   "repository": "git@github.com:Quarko/flaschenbot.git",
