@@ -17,15 +17,18 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: echo '${{ secrets.ENV_FILE}}' > .env
-    - run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
     - run: yarn install
     - run: yarn build
       env:
         CI: true
-    - name:  'Automated Version Bump'
-      if: github.ref != 'refs/heads/master' && github.event.pull_request
+    - name: 'Automated Version Bump'
+      if: github.ref != 'refs/heads/master' && !contains(github.ref, 'merge')
       uses:  'phips28/gh-action-bump-version@master'
+      
+    - run: echo '${{ secrets.ENV_FILE}}' > .env
+      if: github.ref == 'refs/heads/master'
+    - run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
+      if: github.ref == 'refs/heads/master'
 
     - name: Copy file via scp
       if: github.ref == 'refs/heads/master'
