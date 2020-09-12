@@ -26,7 +26,7 @@ export class FlaschenpostScraper {
         this.baseUrl = baseUrl;
     }
 
-    async pcIsAvailable(pc: string): Promise<boolean> {
+    async postCodeExists(pc: string): Promise<boolean> {
         const browser = await puppeteer.launch({
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
             headless: true,
@@ -57,13 +57,13 @@ export class FlaschenpostScraper {
 
             elements
                 .filter(e => {
-                    if (e.innerText === 'TOP-ANGEBOT') {
+                    if (e.innerText === this.offerKey) {
                         return e;
                     }
                 })
                 .map(e => {
                     //for(const e of elements) {
-                    if (e.innerText === 'TOP-ANGEBOT') {
+                    if (e.innerText === this.offerKey) {
                         const element = e.parentElement;
                         const name = element
                             .getElementsByClassName('fp-productList_productName')[0]
@@ -123,7 +123,7 @@ export class FlaschenpostScraper {
         }, category);
     }
 
-    async runWithPC(pc: string): Promise<Offer[]> {
+    async getOffersForPostCodes(postCode: string): Promise<Offer[]> {
         const browser = await puppeteer.launch({
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
             headless: true,
@@ -133,14 +133,14 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl);
             await page.waitFor('input.fp-input--hasVal');
-            await page.type('input.fp-input--hasVal', pc);
+            await page.type('input.fp-input--hasVal', postCode);
             await page.click('button.zip--button');
             await page.waitForSelector('.fp-modal_inner', { timeout: this.timeout, hidden: true });
 
             let result = [];
 
             for (const category of this.categories) {
-                console.log(`Checking offers for ${pc}: ${category}`);
+                console.log(`Checking offers for ${postCode}: ${category}`);
 
                 await page.goto(`${this.baseUrl}/bier/${category}`);
 
@@ -151,7 +151,7 @@ export class FlaschenpostScraper {
                 });
 
                 if (exists) {
-                    console.log(`Skipping category ${category} because it does not exist at postcode ${pc}`);
+                    console.log(`Skipping category ${category} because it does not exist at postcode ${postCode}`);
                     continue;
                 }
 
@@ -165,7 +165,7 @@ export class FlaschenpostScraper {
                     continue;
                 }
 
-                console.log(`Found ${offers.length} results for ${pc}`);
+                console.log(`Found ${offers.length} results for ${postCode}`);
 
                 result = [...result, ...offers];
             }
