@@ -26,7 +26,7 @@ export const updateOffersForPostCodes = async (postCodes: PostCode[], requireMes
     let reply = '';
 
     for (const postCode of postCodes) {
-        const latestOffers: Offer[] = await Scraper.runWithPC(postCode.postCode);
+        const latestOffers: Offer[] = await Scraper.getOffersForPostCodes(postCode.postCode);
         const offers = await getRepository(Offer).find({ postCode: postCode, isLatest: true });
 
         for (const latestOffer of latestOffers) {

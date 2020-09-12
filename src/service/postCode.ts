@@ -47,7 +47,7 @@ export async function postCodeChangeHandler(ctx) {
 
         if (typeof postCode === 'undefined') {
             const Scraper = new FlaschenpostScraper(process.env.URL);
-            const exists = await Scraper.pcIsAvailable(message);
+            const exists = await Scraper.postCodeExists(message);
 
             if (!exists) {
                 ctx.reply(
