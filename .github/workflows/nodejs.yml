@@ -24,9 +24,9 @@ jobs:
       env:
         CI: true
     - name:  'Automated Version Bump'
-      if: github.ref == 'refs/heads/master'
+      if: github.ref != 'refs/heads/master'
       uses:  'phips28/gh-action-bump-version@master'
-      
+
     - name: Copy file via scp
       if: github.ref == 'refs/heads/master'
       uses: appleboy/scp-action@master
