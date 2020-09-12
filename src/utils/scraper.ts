@@ -4,7 +4,6 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private offerKey = 'TOP-ANGEBOT';
     private timeout = 10000;
 
     private categories: string[] = [
@@ -57,13 +56,13 @@ export class FlaschenpostScraper {
 
             elements
                 .filter(e => {
-                    if (e.innerText === this.offerKey) {
+                    if (e.innerText === 'TOP-ANGEBOT') {
                         return e;
                     }
                 })
                 .map(e => {
                     //for(const e of elements) {
-                    if (e.innerText === this.offerKey) {
+                    if (e.innerText === 'TOP-ANGEBOT') {
                         const element = e.parentElement;
                         const name = element
                             .getElementsByClassName('fp-productList_productName')[0]

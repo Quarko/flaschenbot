@@ -24,7 +24,7 @@ jobs:
       env:
         CI: true
     - name: 'Automated Version Bump'
-      if: github.ref != 'refs/heads/master' && !contains(github.ref, 'merge')
+      if: github.ref == 'refs/heads/develop'
       uses:  'phips28/gh-action-bump-version@master'
       
     - name: 'Setup environment'
