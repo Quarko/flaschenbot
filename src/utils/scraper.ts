@@ -64,6 +64,8 @@ export class FlaschenpostScraper {
                     //for(const e of elements) {
                     if (e.innerText === 'TOP-ANGEBOT') {
                         const element = e.parentElement;
+                        const regexNumber = /\d+\,?\d*/g;
+
                         const name = element
                             .getElementsByClassName('fp-productList_productName')[0]
                             .textContent.split('\n')[1]
@@ -84,29 +86,27 @@ export class FlaschenpostScraper {
                         };
 
                         if (bottleDetails.length >= 2) {
-                            const split = bottleDetails.split(' ');
-                            offer.bottleAmount = parseInt(split[split.length - 4]);
-                            offer.bottleSize = parseFloat(split[split.length - 2].replace('L', '').replace(',', '.'));
+                            const results = bottleDetails.match(regexNumber);
+                            if (results.length >= 2) {
+                                offer.bottleAmount = parseInt(results[results.length - 2].replace(',', '.'));
+                                offer.bottleSize = parseFloat(results[results.length - 1].replace(',', '.'));
+                            }
                         }
 
                         if (priceOffer.getElementsByClassName('fp-productList_price--stroke').length > 0) {
-                            offer.oldPrice = parseFloat(
-                                priceOffer
-                                    .getElementsByClassName('fp-productList_price--stroke')[0]
-                                    .innerText.split(' ')[0]
-                                    .replace(',', '.'),
-                            );
+                            const result = priceOffer
+                                .getElementsByClassName('fp-productList_price--stroke')[0]
+                                .innerText.match(regexNumber);
+                            offer.oldPrice = parseFloat(result[0].replace(',', '.'));
                         } else {
                             return;
                         }
 
                         if (priceOffer.getElementsByClassName('fp-price-is-special-offer').length > 0) {
-                            offer.price = parseFloat(
-                                priceOffer
-                                    .getElementsByClassName('fp-price-is-special-offer')[0]
-                                    .innerText.split(' ')[0]
-                                    .replace(',', '.'),
-                            );
+                            const result = priceOffer
+                                .getElementsByClassName('fp-price-is-special-offer')[0]
+                                .innerText.match(regexNumber);
+                            offer.price = parseFloat(result[0].replace(',', '.'));
                         } else {
                             return;
                         }
@@ -161,6 +161,7 @@ export class FlaschenpostScraper {
                 try {
                     offers = await this.getOffers(category, page);
                 } catch (error) {
+                    console.log('Error: ', error);
                     continue;
                 }
 
