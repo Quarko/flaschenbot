@@ -8,13 +8,34 @@ export function generateMessage(offers: Offer[], postCode: string): string {
     let reply = '';
 
     if (offers.length > 0) {
-        reply += `Angebote in ${postCode} für Pils:\n`;
+        offers
+            .reduce((arr, t) => {
+                const index = arr.findIndex(e => e.category === t.category);
+
+                if (index >= 0) {
+                    arr[index].offers.push(t);
+                } else {
+                    arr.push({
+                        category: t.category,
+                        offers: [t],
+                    });
+                }
+
+                return arr;
+            }, [])
+            .forEach((e, i) => {
+                reply += `Angebote in ${postCode} für ${e.category
+                    .split('-')
+                    .map(t => t[0].toUpperCase() + t.slice(1))
+                    .join(' ')}:\n`;
+
+                e.offers.forEach(offer => {
+                    reply += `- ${offer.name}: (${offer.bottleAmount} x ${offer.bottleSize}) ${offer.price}€ (${offer.oldPrice}€)\n`;
+                });
+                reply += '\n';
+            });
     } else {
         return `Keine Angebote für die Postleitzahl ${postCode}`;
-    }
-
-    for (const offer of offers) {
-        reply += `- ${offer.name}: (${offer.bottleAmount} x ${offer.bottleSize}) ${offer.price}€ (${offer.oldPrice}€)\n`;
     }
 
     return reply;

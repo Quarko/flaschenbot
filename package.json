@@ -1,6 +1,6 @@
 {
   "name": "flaschenbot",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Bot for flaschenpost.de",
   "main": "src/index.ts",
   "repository": "git@github.com:Quarko/flaschenbot.git",
@@ -15,9 +15,6 @@
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate"
   },
-  "pre-commit": [
-    "lint"
-  ],
   "dependencies": {
     "@sentry/node": "^5.13.1",
     "@types/node": "^13.1.8",
@@ -27,7 +24,6 @@
     "babelify": "^10.0.0",
     "cron": "^1.8.2",
     "dotenv": "^8.2.0",
-    "pre-commit": "^1.2.2",
     "puppeteer": "^2.0.0",
     "sequelize": "^5.21.3",
     "sequelize-cli": "^5.5.1",
