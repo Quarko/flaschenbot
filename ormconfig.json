@@ -5,14 +5,14 @@
    "logging": true,
    "entities": [
       "src/entity/**/*.ts",
-      "src/entity/**/*.js"
+      "entity/**/*.js"
    ],
    "migrations": [
       "src/migration/**/*.ts"
    ],
    "subscribers": [
       "src/subscriber/**/*.ts",
-      "src/subscriber/**/*.js"
+      "subscriber/**/*.js"
    ],
    "cli": {
       "entitiesDir": "src/entity",
