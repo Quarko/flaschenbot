@@ -1,60 +1,60 @@
-name: Node.js CI
+# name: Node.js CI
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-  build:
+# jobs:
+#   build:
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [12.x]
+#     strategy:
+#       matrix:
+#         node-version: [12.x]
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Install dependencies
-      run: yarn install
-    - name: Build application
-      run: yarn build
-      env:
-        CI: true
-    - name: 'Automated Version Bump'
-      if: github.ref == 'refs/heads/develop'
-      uses:  'phips28/gh-action-bump-version@master'
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Use Node.js ${{ matrix.node-version }}
+#       uses: actions/setup-node@v1
+#       with:
+#         node-version: ${{ matrix.node-version }}
+#     - name: Install dependencies
+#       run: yarn install
+#     - name: Build application
+#       run: yarn build
+#       env:
+#         CI: true
+#     - name: 'Automated Version Bump'
+#       if: github.ref == 'refs/heads/develop'
+#       uses:  'phips28/gh-action-bump-version@master'
       
-    - name: 'Setup environment'
-      run: echo '${{ secrets.ENV_FILE}}' > .env
-      if: github.ref == 'refs/heads/master'
-    - name: 'Setup database'
-      run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
-      if: github.ref == 'refs/heads/master'
+#     - name: 'Setup environment'
+#       run: echo '${{ secrets.ENV_FILE}}' > .env
+#       if: github.ref == 'refs/heads/master'
+#     - name: 'Setup database'
+#       run: echo '${{ secrets.ORMCONFIG}}' > ormconfig.json
+#       if: github.ref == 'refs/heads/master'
 
-    - name: Copy file via scp
-      if: github.ref == 'refs/heads/master'
-      uses: appleboy/scp-action@master
-      with:
-        key: ${{ secrets.SSHKEY }}
-        port: ${{ secrets.PORT }}
-        username: ${{ secrets.USERNAME }}
-        host: ${{ secrets.HOST }}
-        rm: true
-        source: "."
-        target: "/${{ secrets.USERNAME }}/${{ secrets.SERVICE_NAME }}"
+#     - name: Copy file via scp
+#       if: github.ref == 'refs/heads/master'
+#       uses: appleboy/scp-action@master
+#       with:
+#         key: ${{ secrets.SSHKEY }}
+#         port: ${{ secrets.PORT }}
+#         username: ${{ secrets.USERNAME }}
+#         host: ${{ secrets.HOST }}
+#         rm: true
+#         source: "."
+#         target: "/${{ secrets.USERNAME }}/${{ secrets.SERVICE_NAME }}"
 
-    - name: Deploy production
-      if: github.ref == 'refs/heads/master'
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        port: ${{ secrets.PORT }}
-        key: ${{ secrets.SSHKEY }}
-        script: |
-          yarn --cwd ${{ secrets.SERVICE_NAME }} migration:run
-          pm2 restart ${{ secrets.SERVICE_NAME }}
+#     - name: Deploy production
+#       if: github.ref == 'refs/heads/master'
+#       uses: appleboy/ssh-action@master
+#       with:
+#         host: ${{ secrets.HOST }}
+#         username: ${{ secrets.USERNAME }}
+#         port: ${{ secrets.PORT }}
+#         key: ${{ secrets.SSHKEY }}
+#         script: |
+#           yarn --cwd ${{ secrets.SERVICE_NAME }} migration:run
+#           pm2 restart ${{ secrets.SERVICE_NAME }}
 
