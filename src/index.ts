@@ -1,15 +1,19 @@
-import 'reflect-metadata';
-import { config } from 'dotenv';
-import { connect } from './database';
-import { CronJob } from 'cron';
-import { authHandler } from './middleware';
-import { stopHandler, welcomeHandler } from './service/subscription';
-import { postCodeHandler, postCodeChangeHandler } from './service/postCode';
-import { userInformJob, webScrapingJob } from './service/job';
-import { statusHandler } from './service/status';
-import { helpHandler } from './service/help';
 import * as Sentry from '@sentry/node';
+import { CronJob } from 'cron';
+import { config } from 'dotenv';
+import * as express from "express";
+import 'reflect-metadata';
+import { connect } from './database';
+import { authHandler } from './middleware';
+import { helpHandler } from './service/help';
+import { webScrapingJob } from './service/job';
+import { postCodeChangeHandler, postCodeHandler } from './service/postCode';
+import { statusHandler } from './service/status';
+import { stopHandler, welcomeHandler } from './service/subscription';
 import { bot } from './utils/bot';
+
+const app = express();
+const port = 80;
 
 // eslint-disable-next-line
 const session = require('telegraf/session');
@@ -19,6 +23,17 @@ config();
 if(process.env.NODE_ENV !== 'development') {
     Sentry.init({ dsn: process.env.SENTRY_DSN });
 }
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        "status": "Ok"
+    });
+});
+
+app.listen(port, () => {
+    console.log( `Server started at http://localhost:${ port }` );
+});
+
 
 connect(process.env.DATABASE_URL)
     .then(async () => {
