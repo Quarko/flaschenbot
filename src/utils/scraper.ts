@@ -128,10 +128,10 @@ export class FlaschenpostScraper {
 
         try {
             await page.goto(this.baseUrl);
-            await page.waitFor('input.fp-input--hasVal');
-            await page.type('input.fp-input--hasVal', postCode);
+            await page.waitFor('input#validZipcode');
+            await page.type('input#validZipcode', postCode);
             await page.click('button.zip--button');
-            await page.waitForSelector('#fp-zip-check-modal', { timeout: this.timeout, hidden: true });
+            await page.waitForSelector('.inactive', { timeout: this.timeout });
 
             let result = [];
 
