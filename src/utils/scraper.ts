@@ -33,10 +33,13 @@ export class FlaschenpostScraper {
         const page = await browser.newPage();
 
         try {
-            await page.goto(this.baseUrl);
-            await page.waitFor('input#validZipcode');
-            await page.type('input#validZipcode', pc);
-            await page.click('button.zip--button');
+            await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
+            await page.waitFor('#validZipcode');
+            await page.type('#validZipcode', pc);
+            await Promise.all([
+                await page.click('.zip--button'),
+                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
+            ]);
             const result = await page.evaluate(() => {
                 const header = document.getElementsByClassName('hightraffic--nodeliver').length;
                 return !(header > 0);
@@ -127,11 +130,14 @@ export class FlaschenpostScraper {
         const page = await browser.newPage();
 
         try {
-            await page.goto(this.baseUrl);
-            await page.waitFor('input#validZipcode');
-            await page.type('input#validZipcode', postCode);
-            await page.click('button.zip--button');
-            await page.waitForSelector('.inactive', { timeout: this.timeout });
+            await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
+            await page.waitFor('#validZipcode');
+            await page.type('#validZipcode', postCode);  
+
+            await Promise.all([
+                await page.click('.zip--button'),
+                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
+            ]);
 
             let result = [];
 
@@ -168,6 +174,8 @@ export class FlaschenpostScraper {
             }
             return result;
         } catch (err) {
+            await page.screenshot({ path: `${postCode}_screenshot.png` });
+
             await browser.close();
 
             console.log('Scraper Error: ', err);
