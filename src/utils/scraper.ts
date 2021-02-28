@@ -174,8 +174,6 @@ export class FlaschenpostScraper {
             }
             return result;
         } catch (err) {
-            await page.screenshot({ path: `${postCode}_screenshot.png` });
-
             await browser.close();
 
             console.log('Scraper Error: ', err);
