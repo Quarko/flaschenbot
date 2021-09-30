@@ -37,8 +37,9 @@ export class FlaschenpostScraper {
             await page.waitFor('.fp_modal_container');
 
             await page.evaluate((pc: string) => {
-                (<HTMLInputElement>document.getElementsByClassName('fp_input')[0]).value = pc; 
-            }, pc)
+                const input = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
+                input.value = pc;
+            }, pc);
             await page.type('.fp_input', pc);
             await Promise.all([
                 await page.click('.fp_button'),
@@ -64,7 +65,6 @@ export class FlaschenpostScraper {
 
             elements
                 .filter(e => {
-
                     if (e.innerText.includes('TOP-ANGEBOT')) {
                         return e;
                     }
@@ -72,18 +72,13 @@ export class FlaschenpostScraper {
                 .map(element => {
                     const regexNumber = /\d+\,?\d*/g;
 
-                    const name = element
-                        .getElementsByClassName('fp_product_name')[0]
-                        .textContent
-                        .trim();
+                    const name = element.getElementsByClassName('fp_product_name')[0].textContent.trim();
                     console.log(element.innerText);
                     const bottleOffers: any = [...element.getElementsByClassName('fp_article bottleTypeExists')];
 
                     bottleOffers.map(bottleOffer => {
+                        const bottleDetails = bottleOffer.getElementsByClassName('fp_article_bottleInfo')[0].innerText;
 
-                        const bottleDetails = bottleOffer.getElementsByClassName('fp_article_bottleInfo')[0]
-                            .innerText;
-                        
                         const offer = {
                             name: name,
                             category: category,
@@ -92,7 +87,7 @@ export class FlaschenpostScraper {
                             oldPrice: 0.0,
                             price: 0.0,
                         };
-    
+
                         if (bottleDetails.length >= 2) {
                             const results = bottleDetails.match(regexNumber);
                             if (results.length >= 2) {
@@ -100,7 +95,7 @@ export class FlaschenpostScraper {
                                 offer.bottleSize = parseFloat(results[results.length - 1].replace(',', '.'));
                             }
                         }
-    
+
                         if (bottleOffer.getElementsByClassName('fp_article_price').length > 0) {
                             const result = bottleOffer
                                 .getElementsByClassName('fp_article_price')[0]
@@ -109,7 +104,7 @@ export class FlaschenpostScraper {
                         } else {
                             return;
                         }
-    
+
                         if (bottleOffer.getElementsByClassName('fp_article_price_stroked').length > 0) {
                             const result = bottleOffer
                                 .getElementsByClassName('fp_article_price_stroked')[0]
@@ -118,13 +113,11 @@ export class FlaschenpostScraper {
                         } else {
                             return;
                         }
-    
+
                         if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
                             tmp.push(offer);
                         }
-
                     });
-
                 });
             return await new Promise(resolve => {
                 resolve(tmp);
@@ -142,15 +135,17 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
-            await page.evaluate((postCode) => {
-                (<HTMLInputElement>document.getElementsByClassName('fp_input')[0]).value = postCode; 
-            }, postCode)
+            await page.evaluate(postCode => {
+                const input = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
+                input.value = postCode;
+            }, postCode);
             // await page.type('.fp_input', postCode);
 
             await Promise.all([
                 //await page.click('.fp_button'),
                 await page.evaluate(() => {
-                    (<HTMLInputElement>document.getElementsByClassName('fp_button')[0]).click(); 
+                    const button = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
+                    button.click();
                 }),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
             ]);
