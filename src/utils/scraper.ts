@@ -4,7 +4,7 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 3000;
+    private timeout = 10000;
 
     private categories: string[] = [
         'pils',
@@ -28,22 +28,20 @@ export class FlaschenpostScraper {
     async postCodeExists(pc: string): Promise<boolean> {
         const browser = await puppeteer.launch({
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            headless: true,
+            headless: false,
         });
         const page = await browser.newPage();
 
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
+            await page.type('.fp_input', pc),
 
-            await page.evaluate((pc: string) => {
-                const input = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
-                input.value = pc;
-            }, pc);
-            await page.type('.fp_input', pc);
             await Promise.all([
-                await page.click('.fp_button'),
+                page.click('.fp_button'),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
+                page.type('.fp_input', pc),
+                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
             ]);
 
             const result = await page.evaluate(() => {
@@ -135,19 +133,13 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
-            await page.evaluate(postCode => {
-                const input = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
-                input.value = postCode;
-            }, postCode);
-            // await page.type('.fp_input', postCode);
+            await page.type('.fp_input', postCode),
 
             await Promise.all([
-                //await page.click('.fp_button'),
-                await page.evaluate(() => {
-                    const button = document.getElementsByClassName('fp_input')[0] as HTMLInputElement;
-                    button.click();
-                }),
+                page.click('.fp_button'),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
+                page.type('.fp_input', postCode),
+                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
             ]);
 
             let result = [];
@@ -158,7 +150,8 @@ export class FlaschenpostScraper {
                 await page.goto(`${this.baseUrl}/bier/${category}`);
 
                 const exists = await page.evaluate(() => {
-                    const header = document.getElementById('productGroup_null');
+                    const header = document.getElementsByClassName('products_list_vue_container');
+                    console.log("header: %o", header);
                     return header != null;
                 });
 
@@ -185,7 +178,6 @@ export class FlaschenpostScraper {
             return result;
         } catch (err) {
             await browser.close();
-            await page.screenshot({ path: 'error.png' });
             console.log('Scraper Error: ', err);
         } finally {
             await browser.close();
