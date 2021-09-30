@@ -28,7 +28,7 @@ export class FlaschenpostScraper {
     async postCodeExists(pc: string): Promise<boolean> {
         const browser = await puppeteer.launch({
             args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            headless: false,
+            headless: true,
         });
         const page = await browser.newPage();
 
