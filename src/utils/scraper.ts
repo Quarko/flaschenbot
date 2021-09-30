@@ -4,7 +4,7 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 10000;
+    private timeout = 3000;
 
     private categories: string[] = [
         'pils',
@@ -34,12 +34,17 @@ export class FlaschenpostScraper {
 
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
-            await page.waitFor('#validZipcode');
-            await page.type('#validZipcode', pc);
+            await page.waitFor('.fp_modal_container');
+
+            await page.evaluate((pc: string) => {
+                (<HTMLInputElement>document.getElementsByClassName('fp_input')[0]).value = pc; 
+            }, pc)
+            await page.type('.fp_input', pc);
             await Promise.all([
-                await page.click('.zip--button'),
+                await page.click('.fp_button'),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
             ]);
+
             const result = await page.evaluate(() => {
                 const header = document.getElementsByClassName('hightraffic--nodeliver').length;
                 return !(header > 0);
@@ -54,7 +59,7 @@ export class FlaschenpostScraper {
 
     private async getOffers(category: string, page) {
         return await page.evaluate(async category => {
-            const elements: any = [...document.getElementsByClassName('isHighlight')];
+            const elements: any = [...document.getElementsByClassName('isOffer')];
             const tmp = [];
 
             elements
@@ -71,50 +76,55 @@ export class FlaschenpostScraper {
                         .getElementsByClassName('fp_product_name')[0]
                         .textContent
                         .trim();
+                    console.log(element.innerText);
+                    const bottleOffers: any = [...element.getElementsByClassName('fp_article bottleTypeExists')];
 
-                    const priceOffer = element.getElementsByClassName('fp_product_details')[0];
+                    bottleOffers.map(bottleOffer => {
 
-                    const bottleDetails = priceOffer.getElementsByClassName('fp_article_bottleInfo')[0]
-                        .innerText;
-
-                    const offer = {
-                        name: name,
-                        category: category,
-                        bottleAmount: 0,
-                        bottleSize: 0,
-                        oldPrice: 0.0,
-                        price: 0.0,
-                    };
-
-                    if (bottleDetails.length >= 2) {
-                        const results = bottleDetails.match(regexNumber);
-                        if (results.length >= 2) {
-                            offer.bottleAmount = parseInt(results[results.length - 2].replace(',', '.'));
-                            offer.bottleSize = parseFloat(results[results.length - 1].replace(',', '.'));
+                        const bottleDetails = bottleOffer.getElementsByClassName('fp_article_bottleInfo')[0]
+                            .innerText;
+                        
+                        const offer = {
+                            name: name,
+                            category: category,
+                            bottleAmount: 0,
+                            bottleSize: 0,
+                            oldPrice: 0.0,
+                            price: 0.0,
+                        };
+    
+                        if (bottleDetails.length >= 2) {
+                            const results = bottleDetails.match(regexNumber);
+                            if (results.length >= 2) {
+                                offer.bottleAmount = parseInt(results[results.length - 2].replace(',', '.'));
+                                offer.bottleSize = parseFloat(results[results.length - 1].replace(',', '.'));
+                            }
                         }
-                    }
+    
+                        if (bottleOffer.getElementsByClassName('fp_article_price').length > 0) {
+                            const result = bottleOffer
+                                .getElementsByClassName('fp_article_price')[0]
+                                .innerText.match(regexNumber);
+                            offer.oldPrice = parseFloat(result[0].replace(',', '.'));
+                        } else {
+                            return;
+                        }
+    
+                        if (bottleOffer.getElementsByClassName('fp_article_price_stroked').length > 0) {
+                            const result = bottleOffer
+                                .getElementsByClassName('fp_article_price_stroked')[0]
+                                .innerText.match(regexNumber);
+                            offer.price = parseFloat(result[0].replace(',', '.'));
+                        } else {
+                            return;
+                        }
+    
+                        if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
+                            tmp.push(offer);
+                        }
 
-                    if (priceOffer.getElementsByClassName('fp_article_price').length > 0) {
-                        const result = priceOffer
-                            .getElementsByClassName('fp_article_price')[0]
-                            .innerText.match(regexNumber);
-                        offer.oldPrice = parseFloat(result[0].replace(',', '.'));
-                    } else {
-                        return;
-                    }
+                    });
 
-                    if (priceOffer.getElementsByClassName('fp_article_price_stroked').length > 0) {
-                        const result = priceOffer
-                            .getElementsByClassName('fp_article_price_stroked')[0]
-                            .innerText.match(regexNumber);
-                        offer.price = parseFloat(result[0].replace(',', '.'));
-                    } else {
-                        return;
-                    }
-
-                    if (!tmp.some(x => JSON.stringify(x) === JSON.stringify(offer))) {
-                        tmp.push(offer);
-                    }
                 });
             return await new Promise(resolve => {
                 resolve(tmp);
@@ -131,11 +141,17 @@ export class FlaschenpostScraper {
 
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
-            await page.waitFor('#validZipcode');
-            await page.type('#validZipcode', postCode);  
+            await page.waitFor('.fp_modal_container');
+            await page.evaluate((postCode) => {
+                (<HTMLInputElement>document.getElementsByClassName('fp_input')[0]).value = postCode; 
+            }, postCode)
+            // await page.type('.fp_input', postCode);
 
             await Promise.all([
-                await page.click('.zip--button'),
+                //await page.click('.fp_button'),
+                await page.evaluate(() => {
+                    (<HTMLInputElement>document.getElementsByClassName('fp_button')[0]).click(); 
+                }),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
             ]);
 
@@ -147,8 +163,7 @@ export class FlaschenpostScraper {
                 await page.goto(`${this.baseUrl}/bier/${category}`);
 
                 const exists = await page.evaluate(() => {
-                    const header = document.getElementById('products_vue_container');
-                    console.log("Header: %o", header);
+                    const header = document.getElementById('productGroup_null');
                     return header != null;
                 });
 
@@ -157,7 +172,7 @@ export class FlaschenpostScraper {
                     continue;
                 }
 
-                await page.waitForSelector('#products_vue_container', { timeout: this.timeout });
+                await page.waitForSelector('#productGroup_null', { timeout: this.timeout });
 
                 let offers: Offer[];
 
@@ -175,7 +190,7 @@ export class FlaschenpostScraper {
             return result;
         } catch (err) {
             await browser.close();
-
+            await page.screenshot({ path: 'error.png' });
             console.log('Scraper Error: ', err);
         } finally {
             await browser.close();

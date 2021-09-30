@@ -1,6 +1,6 @@
-import { User } from '../entity/User';
-import { getConnection, getManager, getRepository } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import { PostCode } from '../entity/PostCode';
+import { User } from '../entity/User';
 import { validatePostcode } from '../utils/postcode';
 import { FlaschenpostScraper } from '../utils/scraper';
 
@@ -40,22 +40,22 @@ export async function postCodeChangeHandler(ctx) {
         .andWhere('user.id = :userId', { userId: user.id })
         .getOne();
 
+    console.log(userPostCode);
+
     const newPostCode = typeof userPostCode === 'undefined';
 
     if (newPostCode) {
         let postCode = await getRepository(PostCode).findOne({ postCode: message });
-
+        const Scraper = new FlaschenpostScraper(process.env.URL);
+        const exists = await Scraper.postCodeExists(message);
+        if (!exists) {
+            ctx.reply(
+                'Die Postleitzahl wird von flaschenpost leider noch nicht angeboten. Du kannst hier nachschauen, wo flaschenpost bereits angeboten wird: https://www.flaschenpost.de/liefergebiete',
+                ctx.session.menu,
+            );
+            return;
+        }
         if (typeof postCode === 'undefined') {
-            const Scraper = new FlaschenpostScraper(process.env.URL);
-            const exists = await Scraper.postCodeExists(message);
-
-            if (!exists) {
-                ctx.reply(
-                    'Die Postleitzahl wird von flaschenpost leider noch nicht angeboten. Du kannst hier nachschauen, wo flaschenpost bereits angeboten wird: https://www.flaschenpost.de/liefergebiete',
-                    ctx.session.menu,
-                );
-                return;
-            }
             postCode = new PostCode();
             postCode.users = [user];
             postCode.postCode = message;
