@@ -12,7 +12,7 @@ export class FlaschenpostScraper {
         // 'export',
         'weizen-weissbier',
         'alkoholfrei',
-        // 'radler',
+        'radler',
         // 'biermischgetraenke',
         'altbier',
         // 'malzbier',
@@ -39,21 +39,23 @@ export class FlaschenpostScraper {
 
             await Promise.all([
                 page.click('.fp_button'),
-                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
-                page.type('.fp_input', pc),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
             ]);
 
-            const result = await page.evaluate(() => {
-                const header = document.getElementsByClassName('hightraffic--nodeliver').length;
-                return !(header > 0);
-            });
-            return result;
+            await page.type('.fp_input', pc);
+
+            // await Promise.all([
+            //     page.type('.fp_input', pc),
+            //     page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
+            // ])
+
+            return true;
         } catch (error) {
             console.log('Error: ', error);
         } finally {
             await browser.close();
         }
+        return false;
     }
 
     private async getOffers(category: string, page) {
@@ -138,9 +140,9 @@ export class FlaschenpostScraper {
             await Promise.all([
                 page.click('.fp_button'),
                 page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' }),
-                page.type('.fp_input', postCode),
-                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
             ]);
+
+            await page.type('.fp_input', postCode);
 
             let result = [];
 
@@ -160,7 +162,7 @@ export class FlaschenpostScraper {
                     continue;
                 }
 
-                await page.waitForSelector('#productGroup_null', { timeout: this.timeout });
+                await page.waitForSelector('.fp_modal_container', { timeout: this.timeout });
 
                 let offers: Offer[];
 

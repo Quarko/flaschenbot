@@ -40,8 +40,6 @@ export async function postCodeChangeHandler(ctx) {
         .andWhere('user.id = :userId', { userId: user.id })
         .getOne();
 
-    console.log(userPostCode);
-
     const newPostCode = typeof userPostCode === 'undefined';
 
     if (newPostCode) {
