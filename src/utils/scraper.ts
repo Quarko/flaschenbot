@@ -4,7 +4,7 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 10000;
+    private timeout = 5000;
 
     private categories: string[] = [
         'pils',
@@ -39,15 +39,10 @@ export class FlaschenpostScraper {
 
             await Promise.all([
                 page.click('.fp_button'),
-                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
+                page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle2' })
             ]);
 
             await page.type('.fp_input', pc);
-
-            // await Promise.all([
-            //     page.type('.fp_input', pc),
-            //     page.waitForNavigation({ timeout: this.timeout, waitUntil: 'networkidle0' })
-            // ])
 
             return true;
         } catch (error) {
@@ -149,7 +144,7 @@ export class FlaschenpostScraper {
             for (const category of this.categories) {
                 console.log(`Checking offers for ${postCode}: ${category}`);
 
-                await page.goto(`${this.baseUrl}/bier/${category}`);
+                await page.goto(`${this.baseUrl}/bier/${category}`, { waitUntil: 'networkidle0' });
 
                 const exists = await page.evaluate(() => {
                     const header = document.getElementsByClassName('products_list_vue_container');
