@@ -1,10 +1,15 @@
 import * as puppeteer from 'puppeteer';
+import { Page } from 'puppeteer';
 import { Offer } from '../entity/Offer';
 
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 5000;
+    private timeout = 10000;
+
+    private headless = true;
+
+    private browserArgs = ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
 
     private categories: string[] = [
         'pils',
@@ -25,12 +30,17 @@ export class FlaschenpostScraper {
         this.baseUrl = baseUrl;
     }
 
-    async postCodeExists(pc: string): Promise<boolean> {
-        const browser = await puppeteer.launch({
-            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            headless: true,
-        });
-        const page = await browser.newPage();
+    async postCodeExists(pc: string, page?: Page): Promise<boolean> {
+        let browser;
+        const shouldClose = page == null;
+
+        if (page == null) {
+            browser = await puppeteer.launch({
+                args: this.browserArgs,
+                headless: this.headless,
+            });
+            page = await browser.newPage();
+        }
 
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
@@ -52,7 +62,8 @@ export class FlaschenpostScraper {
         } catch (error) {
             console.log('Error: ', error);
         } finally {
-            await browser.close();
+            if (shouldClose)
+                await browser.close();
         }
         return false;
     }
@@ -126,26 +137,15 @@ export class FlaschenpostScraper {
 
     async getOffersForPostCodes(postCode: string): Promise<Offer[]> {
         const browser = await puppeteer.launch({
-            args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            headless: true,
+            args: this.browserArgs,
+            headless: this.headless,
         });
-        const page = await browser.newPage();
-
+        
         try {
-            await page.goto(this.baseUrl, { timeout: this.timeout, waitUntil: 'networkidle0' });
-            await page.waitFor('.fp_modal_container');
-            await page.type('.fp_input', postCode);
-            await page.click('.fp_button');
+            const page = await browser.newPage();
 
-            const noDelivery = await page.evaluate(() => {
-                const link = document.getElementsByClassName('fp_link')[0] as HTMLElement;
-                return link.offsetParent
-            });
-
-            if (noDelivery != null)
+            if (!await this.postCodeExists(postCode, page))
                 return [];
-
-            await page.type('.fp_input', postCode);
 
             let result = [];
 
