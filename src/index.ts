@@ -37,21 +37,23 @@ app.listen(port, () => {
 
 connect(process.env.DATABASE_URL)
     .then(async () => {
-        const scrapingJob = new CronJob('0 0,30 * * * *', async () => {
-            try {
-                console.log('Running web scraping job to identify offers...');
-                await webScrapingJob();
-            } catch (err) {
-                console.error("Error: ", err);
-            }
-        },
-        () => {
-            console.log("Successfully ran webScraping job...")
-        },
-        true,
-        'Europe/Berlin');
-
-        scrapingJob.start();
+        if(process.env.NODE_ENV !== 'development') {
+            const scrapingJob = new CronJob('0 0,30 * * * *', async () => {
+                try {
+                    console.log('Running web scraping job to identify offers...');
+                    await webScrapingJob();
+                } catch (err) {
+                    console.error("Error: ", err);
+                }
+            },
+            () => {
+                console.log("Successfully ran webScraping job...")
+            },
+            true,
+            'Europe/Berlin');
+            
+            scrapingJob.start();
+        }
 
         bot.use(session());
         bot.use(authHandler());
@@ -61,8 +63,7 @@ connect(process.env.DATABASE_URL)
                 await welcomeHandler(ctx);
             } catch (err) {
                 console.error("Error: ", err);
-                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
-            
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session?.menu)
             }
         });
 
@@ -71,7 +72,7 @@ connect(process.env.DATABASE_URL)
                 await postCodeHandler(ctx);
             } catch (err) {
                 console.error("Error: ", err);
-                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session?.menu)
             
             }
         });
@@ -81,8 +82,7 @@ connect(process.env.DATABASE_URL)
                 await stopHandler(ctx);
             } catch (err) {
                 console.error("Error: ", err);
-                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
-            
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session?.menu)
             }
         });
         bot.command('help', ctx => helpHandler(ctx));
@@ -92,15 +92,19 @@ connect(process.env.DATABASE_URL)
                 await statusHandler(ctx)
             } catch (err) {
                 console.error("Error: ", err);
-                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session?.menu)
             }
         });
 
         bot.on('text', async ctx => await postCodeChangeHandler(ctx));
 
         bot.catch((err, ctx) => {
-                console.error("Error: ", err);
-                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session.menu)
+            console.error("Error: ", err);
+            if(typeof ctx.reply === 'function') {
+                ctx.reply('Oops. Bei deiner Abfrage ist etwas schief gelaufen. Ich werde mir das mal genauer anschauen.', ctx.session?.menu)
+            } else {
+                console.log("Context: ", ctx);
+            }
         });
 
         bot.launch();

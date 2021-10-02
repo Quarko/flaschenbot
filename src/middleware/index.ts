@@ -5,7 +5,12 @@ import { User } from '../entity/User';
 const Telegraf = require('telegraf');
 
 export const authHandler = () => async (ctx, next) => {
-    const telegramUser = ctx.update.message.from;
+    const now = new Date().getTime() / 1000
+    if (ctx.update.message?.date < (now - 60 * 15)) {
+      return;
+    }
+
+    const telegramUser = ctx.update.message?.from;
     const userRepository = getRepository(User);
     let user = await userRepository.findOne({ telegramId: telegramUser.id });
 
