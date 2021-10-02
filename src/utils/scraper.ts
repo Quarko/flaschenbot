@@ -34,6 +34,10 @@ export class FlaschenpostScraper {
         let browser;
         const shouldClose = page == null;
 
+        if(!shouldClose) {
+            console.log("Using existing page to check post code");
+        }
+
         if (page == null) {
             browser = await puppeteer.launch({
                 args: this.browserArgs,
@@ -49,21 +53,23 @@ export class FlaschenpostScraper {
             await page.click('.fp_button');
 
             const noDelivery = await page.evaluate(() => {
+                // First element link should only be displayed when the post code is a no delivery
                 const link = document.getElementsByClassName('fp_link')[0] as HTMLElement;
-                return link.offsetParent
+                return link.offsetParent;
             });
 
-            if (noDelivery != null)
-                return false;
+            if (noDelivery != null) return false;
 
             await page.type('.fp_input', pc);
 
             return true;
         } catch (error) {
-            console.log('Error: ', error);
+            console.log('Post code error: ', error);
         } finally {
-            if (shouldClose)
+            if (shouldClose) {
+                console.log("Closing browser session");
                 await browser.close();
+            }
         }
         return false;
     }
@@ -140,23 +146,31 @@ export class FlaschenpostScraper {
             args: this.browserArgs,
             headless: this.headless,
         });
-        
+
+        let result = [];
+
         try {
             const page = await browser.newPage();
 
-            if (!await this.postCodeExists(postCode, page))
-                return [];
-
-            let result = [];
+            if (!(await this.postCodeExists(postCode, page))) return [];
 
             for (const category of this.categories) {
                 console.log(`Checking offers for ${postCode}: ${category}`);
-
-                await page.goto(`${this.baseUrl}/bier/${category}`, { timeout: this.timeout, waitUntil: 'networkidle0' });
+                const url = `${this.baseUrl}/bier/${category}`;
+                try {
+                    await page.goto(url, {
+                        timeout: this.timeout,
+                        waitUntil: 'networkidle0',
+                    });
+                } catch (err) {
+                    console.log(`Cannot access ${url} skipping...`);
+                    console.error(err);
+                    continue;
+                }
 
                 const exists = await page.evaluate(() => {
                     const header = document.getElementsByClassName('products_list_vue_container');
-                    console.log("header: %o", header);
+                    console.log('header: %o', header);
                     return header != null;
                 });
 
@@ -172,7 +186,7 @@ export class FlaschenpostScraper {
                 try {
                     offers = await this.getOffers(category, page);
                 } catch (error) {
-                    console.log('Error: ', error);
+                    console.log('Error getting offers: ', error);
                     continue;
                 }
 
@@ -186,5 +200,6 @@ export class FlaschenpostScraper {
         } finally {
             await browser.close();
         }
+        return result;
     }
 }
