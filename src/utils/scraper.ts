@@ -65,8 +65,6 @@ export class FlaschenpostScraper {
 
             if (noDelivery) return false;
 
-            if(page.)
-
             return true;
         } catch (error) {
             console.log('Post code error: ', error);
