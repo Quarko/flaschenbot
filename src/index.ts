@@ -13,7 +13,7 @@ import { stopHandler, welcomeHandler } from './service/subscription';
 import { bot } from './utils/bot';
 
 const app = express();
-const port = 80;
+const port = 53413;
 
 // eslint-disable-next-line
 const session = require('telegraf/session');
