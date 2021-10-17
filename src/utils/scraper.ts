@@ -34,6 +34,8 @@ export class FlaschenpostScraper {
         let browser;
         const shouldClose = page == null;
 
+        console.log(`Checking post code ${pc}...`)
+
         if (!shouldClose) {
             console.log('Using existing page to check post code');
         }
@@ -52,18 +54,33 @@ export class FlaschenpostScraper {
             await page.type('.fp_input', pc);
             await page.click('.fp_button');
 
-            const noDelivery = await page.evaluate(() => {
-                // First element link should only be displayed when the post code is a no delivery
+            
+            const noValidPostCode = await page.evaluate(() => {
                 const span = document.getElementsByClassName('red') as HTMLCollectionOf<HTMLElement>;
-                if (span.length > 0)
-                    return true;
-                
+                return span.length > 0;
+            });
+            
+            if(noValidPostCode) return false;
+            console.log(`${pc} is a valid post code`);
+            try {
+                await page.waitForNavigation({waitUntil: 'networkidle0', timeout: 5000});
+            } catch {
+                console.log(`Navigation ran into timeout for post code ${pc}`);
+                return false;
+            }
+
+            const noDelivery = await page.evaluate(() => {                
                 const container = document.getElementById("zipcode");
 
                 return container.offsetParent != null;
             });
+            
+            if (noDelivery) {
+                console.log(`${pc} is not in delivery area`);
+                return false;
+            }
 
-            if (noDelivery) return false;
+            console.log(`${pc} is in delivery area`);
 
             return true;
         } catch (error) {
