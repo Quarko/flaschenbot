@@ -54,11 +54,12 @@ export class FlaschenpostScraper {
 
             const noDelivery = await page.evaluate(() => {
                 // First element link should only be displayed when the post code is a no delivery
-                const link = document.getElementsByClassName('fp_link')[0] as HTMLElement;
-                return link.offsetParent;
+                const span = document.getElementsByClassName('red') as HTMLCollectionOf<HTMLElement>;
+                const button = document.getElementsByClassName("fp_button")[0] as HTMLButtonElement;
+                return span.length > 0 || button.disabled;
             });
 
-            if (noDelivery != null) return false;
+            if (noDelivery) return false;
 
             await page.type('.fp_input', pc);
 
