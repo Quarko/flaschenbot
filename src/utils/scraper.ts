@@ -55,10 +55,17 @@ export class FlaschenpostScraper {
             const noDelivery = await page.evaluate(() => {
                 // First element link should only be displayed when the post code is a no delivery
                 const span = document.getElementsByClassName('red') as HTMLCollectionOf<HTMLElement>;
-                return span.length > 0;
+                if (span.length > 0)
+                    return true;
+                
+                const container = document.getElementById("zipcode");
+
+                return container.offsetParent != null;
             });
 
             if (noDelivery) return false;
+
+            if(page.)
 
             return true;
         } catch (error) {
