@@ -63,7 +63,7 @@ export class FlaschenpostScraper {
             if(noValidPostCode) return false;
             console.log(`${pc} is a valid post code`);
             try {
-                await page.waitForNavigation({waitUntil: 'networkidle0', timeout: 5000});
+                await page.waitForNavigation({waitUntil: 'networkidle0', timeout: 7500});
             } catch {
                 console.log(`Navigation ran into timeout for post code ${pc}`);
                 return false;
