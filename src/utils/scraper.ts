@@ -34,8 +34,8 @@ export class FlaschenpostScraper {
         let browser;
         const shouldClose = page == null;
 
-        if(!shouldClose) {
-            console.log("Using existing page to check post code");
+        if (!shouldClose) {
+            console.log('Using existing page to check post code');
         }
 
         if (page == null) {
@@ -60,14 +60,12 @@ export class FlaschenpostScraper {
 
             if (noDelivery) return false;
 
-            await page.type('.fp_input', pc);
-
             return true;
         } catch (error) {
             console.log('Post code error: ', error);
         } finally {
             if (shouldClose) {
-                console.log("Closing browser session");
+                console.log('Closing browser session');
                 await browser.close();
             }
         }
