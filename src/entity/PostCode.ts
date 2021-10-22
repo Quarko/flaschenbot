@@ -1,16 +1,8 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    JoinColumn,
-    CreateDateColumn,
-    UpdateDateColumn,
-    OneToMany,
-    ManyToMany,
-    JoinTable,
+    Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn
 } from 'typeorm';
-import { User } from './User';
 import { Offer } from './Offer';
+import { User } from './User';
 
 @Entity()
 export class PostCode {
@@ -23,7 +15,7 @@ export class PostCode {
     @ManyToMany(
         () => User,
         user => user.postCodes,
-        { nullable: false },
+        { nullable: false, onDelete: 'CASCADE', cascade: true },
     )
     @JoinTable()
     users: User[];
