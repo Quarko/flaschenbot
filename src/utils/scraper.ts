@@ -1,6 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import { Page } from 'puppeteer';
 import { Offer } from '../entity/Offer';
+import { cleanUpPostCode } from '../service/postCode';
 
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
@@ -172,7 +173,10 @@ export class FlaschenpostScraper {
         try {
             const page = await browser.newPage();
 
-            if (!(await this.postCodeExists(postCode, page))) return [];
+            if (!(await this.postCodeExists(postCode, page))) {
+                await cleanUpPostCode(postCode);
+                return [];
+            } 
 
             for (const category of this.categories) {
                 console.log(`Checking offers for ${postCode}: ${category}`);

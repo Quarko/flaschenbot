@@ -1,6 +1,7 @@
 import { getManager, getRepository } from 'typeorm';
 import { PostCode } from '../entity/PostCode';
 import { User } from '../entity/User';
+import { bot } from '../utils/bot';
 import { validatePostcode } from '../utils/postcode';
 import { FlaschenpostScraper } from '../utils/scraper';
 
@@ -79,4 +80,18 @@ export async function postCodeChangeHandler(ctx) {
         : `Die Postleitzahl ${message} wurde entfernt`;
 
     ctx.reply(reply, ctx.session.menu);
+}
+
+export const cleanUpPostCode = async (pc) => {
+    const postCode = await getRepository(PostCode)
+        .createQueryBuilder('post_code')
+        .leftJoinAndSelect('post_code.users', 'user')
+        .andWhere('post_code.postCode = :postCode', { postCode: pc })
+        .getOne();
+    const reply = `Die Postleitzahl ${pc} wird leider nicht mehr von flaschenpost beliefert und wurde entfernt.\n`;
+    for(const user of postCode.users) {
+        bot.telegram.sendMessage(user.telegramId, reply);
+    }
+
+    await getRepository(PostCode).remove(postCode);
 }
