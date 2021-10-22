@@ -11,6 +11,9 @@ export const authHandler = () => async (ctx, next) => {
     }
 
     const telegramUser = ctx.update.message?.from;
+    if (telegramUser == null)
+        return;
+
     const userRepository = getRepository(User);
     let user = await userRepository.findOne({ telegramId: telegramUser.id });
 
