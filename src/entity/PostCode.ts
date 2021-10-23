@@ -15,7 +15,7 @@ export class PostCode {
     @ManyToMany(
         () => User,
         user => user.postCodes,
-        { nullable: false, onDelete: 'CASCADE', cascade: true },
+        { nullable: false },
     )
     @JoinTable()
     users: User[];

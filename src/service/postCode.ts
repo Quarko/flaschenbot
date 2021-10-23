@@ -1,4 +1,5 @@
-import { getManager, getRepository } from 'typeorm';
+import { getConnection, getManager, getRepository } from 'typeorm';
+import { Offer } from '../entity/Offer';
 import { PostCode } from '../entity/PostCode';
 import { User } from '../entity/User';
 import { bot } from '../utils/bot';
@@ -89,9 +90,22 @@ export const cleanUpPostCode = async (pc) => {
         .andWhere('post_code.postCode = :postCode', { postCode: pc })
         .getOne();
     const reply = `Die Postleitzahl ${pc} wird leider nicht mehr von flaschenpost beliefert und wurde entfernt.\n`;
+    
     for(const user of postCode.users) {
         bot.telegram.sendMessage(user.telegramId, reply);
     }
 
+    postCode.users = [];
+
+    // Delete old offers
+    await getConnection()
+        .createQueryBuilder()
+        .delete()
+        .from(Offer)
+        .where("postCode = :id", { id: postCode.id })
+        .execute();
+    // Delete user relations
+    await getRepository(PostCode).save(postCode);
+    // Delete old post code
     await getRepository(PostCode).remove(postCode);
 }

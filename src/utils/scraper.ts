@@ -1,7 +1,6 @@
 import * as puppeteer from 'puppeteer';
 import { Page } from 'puppeteer';
 import { Offer } from '../entity/Offer';
-import { cleanUpPostCode } from '../service/postCode';
 
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
@@ -174,7 +173,7 @@ export class FlaschenpostScraper {
             const page = await browser.newPage();
 
             if (!(await this.postCodeExists(postCode, page))) {
-                await cleanUpPostCode(postCode);
+                // await cleanUpPostCode(postCode);
                 return [];
             } 
 
