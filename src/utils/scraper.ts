@@ -5,9 +5,9 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 10000;
+    private timeout = 20000;
 
-    private headless = true;
+    private headless = false;
 
     private browserArgs = ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
 
@@ -51,10 +51,10 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
+            const pageStatus = page.waitForNavigation({waitUntil: 'networkidle2', timeout: 20000});
             await page.type('.fp_input', pc);
             await page.click('.fp_button');
 
-            
             const noValidPostCode = await page.evaluate(() => {
                 const span = document.getElementsByClassName('red') as HTMLCollectionOf<HTMLElement>;
                 return span.length > 0;
@@ -63,7 +63,7 @@ export class FlaschenpostScraper {
             if(noValidPostCode) return false;
             console.log(`${pc} is a valid post code`);
             try {
-                await page.waitForNavigation({waitUntil: 'networkidle2', timeout: 7500});
+                await pageStatus;
             } catch {
                 console.log(`Navigation ran into timeout for post code ${pc}`);
                 return false;
