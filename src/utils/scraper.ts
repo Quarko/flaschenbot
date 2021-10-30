@@ -5,9 +5,9 @@ import { Offer } from '../entity/Offer';
 export class FlaschenpostScraper {
     private readonly baseUrl: string;
 
-    private timeout = 20000;
+    private timeout = 10000;
 
-    private headless = false;
+    private headless = true;
 
     private browserArgs = ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'];
 
@@ -51,7 +51,7 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
-            const pageStatus = page.waitForNavigation({waitUntil: 'networkidle2', timeout: 20000});
+            const pageStatus = page.waitForNavigation({waitUntil: 'networkidle2', timeout: 7500});
             await page.type('.fp_input', pc);
             await page.click('.fp_button');
 
