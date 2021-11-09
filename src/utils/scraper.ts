@@ -51,7 +51,7 @@ export class FlaschenpostScraper {
         try {
             await page.goto(this.baseUrl, { waitUntil: 'networkidle0' });
             await page.waitFor('.fp_modal_container');
-            const pageStatus = page.waitForNavigation({waitUntil: 'networkidle2', timeout: 7500});
+            const pageStatus = page.waitForNavigation({waitUntil: 'networkidle2', timeout: 10000});
             await page.type('.fp_input', pc);
             await page.click('.fp_button');
 
